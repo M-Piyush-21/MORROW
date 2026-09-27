@@ -1,19 +1,18 @@
 import sys
 from pathlib import Path
 
-# Add backend directory and parent root to sys.path
-backend_dir = Path(__file__).resolve().parent
-project_root = backend_dir.parent
+# Add backend directory and its parent to sys.path
+BASE_DIR = Path(__file__).resolve().parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+if str(BASE_DIR.parent) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR.parent))
 
-if str(backend_dir) not in sys.path:
-    sys.path.insert(0, str(backend_dir))
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
+from app.main import app
 
-try:
-    from backend.app.main import app
-except ModuleNotFoundError:
-    from app.main import app
+# Explicit top-level bindings for Vercel Python serverless runtime
+app = app
+handler = app
 
 if __name__ == "__main__":
     import uvicorn
