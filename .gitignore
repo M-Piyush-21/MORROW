@@ -38,6 +38,7 @@ backend/data/raw/*.csv
 *.xlsx
 backend/models/*.pkl
 backend/models/*.joblib
+!backend/models/random_forest_demand.joblib
 mlruns/
 mlruns.db
 .pytest_cache/
