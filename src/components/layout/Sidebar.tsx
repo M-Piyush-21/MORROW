@@ -12,7 +12,7 @@ import {
   Activity,
   CheckCircle2,
 } from 'lucide-react';
-import { checkBackendHealth } from '@/services/api';
+import { checkBackendHealth, API_BASE_URL } from '@/services/api';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -134,10 +134,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             <div className="rounded-lg bg-secondary/50 p-3">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
-                <p className="text-xs font-medium text-foreground">Offline Fallback</p>
+                <p className="text-xs font-medium text-foreground">Connecting to Backend</p>
               </div>
               <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-                Connecting to backend at localhost:8000...
+                Checking {API_BASE_URL}... Serving local cache until connected.
               </p>
             </div>
           )}

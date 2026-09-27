@@ -19,16 +19,16 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
-# CORS Middleware
+# CORS Middleware - allow all in cloud deployments
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Register routers under /api
+# Register routers under /api (standard)
 app.include_router(health.router, prefix=settings.API_V1_PREFIX)
 app.include_router(dashboard.router, prefix=settings.API_V1_PREFIX)
 app.include_router(products.router, prefix=settings.API_V1_PREFIX)
@@ -36,8 +36,17 @@ app.include_router(forecasts.router, prefix=settings.API_V1_PREFIX)
 app.include_router(restock.router, prefix=settings.API_V1_PREFIX)
 app.include_router(model.router, prefix=settings.API_V1_PREFIX)
 
+# Also register routers at root in case reverse proxy (Vercel) strips /api prefix
+app.include_router(health.router)
+app.include_router(dashboard.router)
+app.include_router(products.router)
+app.include_router(forecasts.router)
+app.include_router(restock.router)
+app.include_router(model.router)
+
 
 @app.get("/")
+@app.get("/api")
 def root():
     return {
         "project": "Morrow",

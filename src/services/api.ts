@@ -32,15 +32,31 @@ import {
   supplierNameById,
 } from '@/data/mockData';
 
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1'
-    ? '/api'
-    : 'http://localhost:8000/api');
+export function resolveApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (typeof window !== 'undefined') {
+    const isLocal =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname === '0.0.0.0';
+
+    if (!isLocal) {
+      // On Vercel / deployed production:
+      // If envUrl is explicitly an external https endpoint, use it; otherwise use same-origin relative /api
+      if (envUrl && envUrl.startsWith('https://') && !envUrl.includes('localhost')) {
+        return envUrl;
+      }
+      return '/api';
+    }
+  }
+  return envUrl || 'http://localhost:8000/api';
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 export const API_CONFIG = {
   baseUrl: API_BASE_URL,
-  timeout: 5000,
+  timeout: 8000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -49,7 +65,7 @@ export const API_CONFIG = {
 export async function checkBackendHealth(): Promise<{ isOnline: boolean; details?: any }> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
     const res = await fetch(`${API_BASE_URL}/health`, {
       signal: controller.signal,
     });
@@ -68,7 +84,7 @@ export async function checkBackendHealth(): Promise<{ isOnline: boolean; details
 async function fetchWithFallback<T>(
   endpoint: string,
   fallbackFn: () => T | Promise<T>,
-  timeoutMs: number = 4000,
+  timeoutMs: number = 8000,
 ): Promise<T> {
   try {
     const controller = new AbortController();
