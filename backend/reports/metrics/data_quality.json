@@ -1,0 +1,29 @@
+{
+  "dataset_name": "UCI Online Retail",
+  "raw_record_count": 541909,
+  "duplicate_rows_removed": 5268,
+  "cancelled_or_negative_rows_excluded": 10587,
+  "cleaned_valid_transactions": 522712,
+  "unique_skus_in_raw": 4070,
+  "selected_modeled_skus": 50,
+  "modeling_skus_list": [
+    "23166",
+    "22197",
+    "84077",
+    "85099B",
+    "85123A",
+    "21212",
+    "84879",
+    "23084",
+    "22492",
+    "22616"
+  ],
+  "date_range": {
+    "start": "2010-12-01",
+    "end": "2011-12-09",
+    "total_calendar_days": 374
+  },
+  "total_daily_observations": 18700,
+  "zero_demand_day_ratio": 0.34,
+  "total_units_sold_in_modeled_skus": 1095354
+}

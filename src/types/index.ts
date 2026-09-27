@@ -1,4 +1,4 @@
-// Core domain types for StockSense
+// Core domain types for Morrow
 
 export type StockStatus = 'in-stock' | 'low-stock' | 'critical' | 'out-of-stock';
 
@@ -74,6 +74,7 @@ export interface DemandForecast {
   averageDailyForecast: number;
   uncertainty: number; // standard deviation
   generatedAt: string;
+  isDemo?: boolean;
 }
 
 export interface RestockRecommendation {

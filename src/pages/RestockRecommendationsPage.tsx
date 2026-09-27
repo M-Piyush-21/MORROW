@@ -17,7 +17,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from 'recharts';
-import { getRestockRecommendations } from '@/services/mockApi';
+import { getRestockRecommendations } from '@/services/api';
 import { useApp } from '@/context/AppContext';
 import { recalculateRecommendation } from '@/utils/calculations';
 import { formatNumber, formatShortDate, formatCurrency } from '@/utils/format';

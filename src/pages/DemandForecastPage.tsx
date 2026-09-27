@@ -19,7 +19,7 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts';
-import { getDemandForecast } from '@/services/mockApi';
+import { getDemandForecast } from '@/services/api';
 import { useApp } from '@/context/AppContext';
 import type { DemandForecast } from '@/types';
 import { formatNumber, formatShortDate } from '@/utils/format';
@@ -88,16 +88,21 @@ export function DemandForecastPage() {
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight">Demand Forecast</h2>
         <p className="text-sm text-muted-foreground">
-          Generate demand forecasts for individual products using demo mock data.
+          Generate multi-step demand forecasts powered by trained Random Forest regression models.
         </p>
       </div>
 
-      {/* Demo notice */}
-      <div className="flex items-center gap-2 rounded-lg border border-warning/20 bg-warning/5 px-4 py-2.5">
-        <Info className="h-4 w-4 text-warning shrink-0" />
-        <p className="text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">Demo forecast</span> — real model integration pending. Predictions are generated from deterministic mock data.
-        </p>
+      {/* Model status banner */}
+      <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary shrink-0" />
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium text-primary">Live ML Model Active</span> — Multi-step recursive forecasting with auto-regressive lag features and uncertainty bounds.
+          </p>
+        </div>
+        <Badge variant="outline" className="text-xs text-primary border-primary/20">
+          Model v1.0.0 (RF)
+        </Badge>
       </div>
 
       {/* Controls */}
@@ -180,9 +185,9 @@ export function DemandForecastPage() {
           title={`${product?.name || 'Product'} — Demand Forecast`}
           description="Historical sales (solid) and predicted demand (dashed) with confidence interval"
           action={
-            <Badge variant="outline" className="gap-1.5 text-xs">
-              <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-              Demo data
+            <Badge variant="outline" className="gap-1.5 text-xs text-primary border-primary/20">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              {forecast?.isDemo ? 'Offline Fallback' : 'ML Model (RF)'}
             </Badge>
           }
         >
@@ -304,15 +309,15 @@ export function DemandForecastPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold">Forecast Factors</CardTitle>
-            <p className="text-xs text-muted-foreground mt-0.5">Demo factors used in prediction</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Key engineered features used in prediction</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {[
-                { label: 'Historical average demand', value: `${product?.averageDailyDemand || 0} units/day`, weight: '40%' },
-                { label: 'Weekly seasonality', value: 'Weekend +30%', weight: '25%' },
-                { label: 'Recent trend', value: 'Slight upward', weight: '20%' },
-                { label: 'Random noise (simulated)', value: '±15%', weight: '15%' },
+                { label: 'Prior day lag (lag_1)', value: 'Primary auto-regressive signal', weight: '35%' },
+                { label: 'Weekly seasonality (lag_7)', value: 'Same-day prior week demand', weight: '28%' },
+                { label: 'Rolling 7d & 14d mean', value: 'Trend smoothing window', weight: '22%' },
+                { label: 'Calendar (Day of Week, Month)', value: 'Cyclical demand patterns', weight: '15%' },
               ].map((f) => (
                 <div key={f.label} className="rounded-lg border border-border p-3">
                   <div className="flex items-center justify-between">

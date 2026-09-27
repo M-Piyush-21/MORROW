@@ -29,9 +29,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { API_BASE_URL, USING_MOCK_DATA } from '@/services/api';
+import { API_BASE_URL, checkBackendHealth } from '@/services/api';
 import { defaultSettings } from '@/data/mockData';
 import { toast } from 'sonner';
+import { useEffect } from 'react';
 
 export function SettingsPage() {
   const { settings, updateSettings, theme, toggleTheme } = useApp();
@@ -52,6 +53,13 @@ export function SettingsPage() {
 
   const [testingApi, setTestingApi] = useState(false);
   const [apiStatusMessage, setApiStatusMessage] = useState<string | null>(null);
+  const [isBackendConnected, setIsBackendConnected] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkBackendHealth().then(({ isOnline }) => {
+      setIsBackendConnected(isOnline);
+    });
+  }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,18 +91,28 @@ export function SettingsPage() {
     });
   };
 
-  const handleTestApi = () => {
+  const handleTestApi = async () => {
     setTestingApi(true);
     setApiStatusMessage(null);
-    setTimeout(() => {
-      setTestingApi(false);
+    const { isOnline, details } = await checkBackendHealth();
+    setTestingApi(false);
+    setIsBackendConnected(isOnline);
+
+    if (isOnline) {
+      setApiStatusMessage(
+        `FastAPI service is connected and healthy (${details?.version || 'v1.0.0'}). ML model: ${details?.modelLoaded ? 'Loaded' : 'Pending'}, Dataset: ${details?.datasetLoaded ? 'Loaded' : 'Pending'}.`,
+      );
+      toast.success('Backend Connected', {
+        description: `FastAPI server is live at ${form.apiEndpoint}. Real model inferences active.`,
+      });
+    } else {
       setApiStatusMessage(
         'FastAPI service is not reachable at this address. Running in standalone Mock Data Mode with simulated network latencies.',
       );
       toast.info('API Status: Mock Mode Active', {
         description: 'Frontend is running independently with deterministic mock data.',
       });
-    }, 900);
+    }
   };
 
   return (
@@ -384,10 +402,17 @@ export function SettingsPage() {
                   </CardDescription>
                 </div>
               </div>
-              <Badge variant="outline" className="gap-1.5 border-warning/30 bg-warning/10 text-warning">
-                <span className="h-1.5 w-1.5 rounded-full bg-warning animate-pulse" />
-                Not connected
-              </Badge>
+              {isBackendConnected ? (
+                <Badge variant="outline" className="gap-1.5 border-success/30 bg-success/10 text-success">
+                  <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                  FastAPI Live
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="gap-1.5 border-warning/30 bg-warning/10 text-warning">
+                  <span className="h-1.5 w-1.5 rounded-full bg-warning animate-pulse" />
+                  Mock Mode (Offline)
+                </Badge>
+              )}
             </div>
           </CardHeader>
           <CardContent className="space-y-4">

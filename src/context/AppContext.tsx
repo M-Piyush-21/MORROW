@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { Product, Settings, Notification } from '@/types';
 import { products as initialProducts, defaultSettings, notifications as initialNotifications } from '@/data/mockData';
+import { getProducts } from '@/services/api';
 import { computeStockStatus } from '@/utils/format';
 import { toast } from 'sonner';
 
@@ -34,6 +35,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+
+  // Fetch real dataset products from live backend on mount
+  useEffect(() => {
+    let isMounted = true;
+    getProducts()
+      .then((realProducts) => {
+        if (isMounted && realProducts && realProducts.length > 0) {
+          setProducts(realProducts);
+        }
+      })
+      .catch((err) => {
+        console.warn('Backend products fetch failed, using fallback:', err);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;

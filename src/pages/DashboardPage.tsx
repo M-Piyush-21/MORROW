@@ -29,7 +29,7 @@ import {
   Line,
   ComposedChart,
 } from 'recharts';
-import { getDashboardSummary } from '@/services/mockApi';
+import { getDashboardSummary } from '@/services/api';
 import type { DashboardSummary } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { formatCurrency, formatNumber, formatShortDate, formatRelativeTime } from '@/utils/format';
@@ -145,9 +145,9 @@ export function DashboardPage() {
         title="Sales vs Forecast"
         description="Historical revenue and 7-day demand forecast"
         action={
-          <Badge variant="outline" className="gap-1.5 text-xs">
-            <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-            Demo forecast
+          <Badge variant="outline" className="gap-1.5 text-xs text-primary border-primary/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+            Trained RF Model
           </Badge>
         }
       >

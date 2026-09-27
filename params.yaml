@@ -1,0 +1,31 @@
+prepare:
+  raw_data_path: "backend/data/raw/Online Retail.xlsx"
+  interim_data_path: "backend/data/interim/cleaned_transactions.parquet"
+  processed_data_path: "backend/data/processed/daily_demand.parquet"
+  quality_report_path: "backend/reports/metrics/data_quality.json"
+  min_history_days: 90
+  top_n_skus: 50
+  handle_returns: "exclude_returns" # Policy: exclude cancellations/returns (InvoiceNo starting with C or Quantity <= 0) from positive demand forecasting
+
+features:
+  input_path: "backend/data/processed/daily_demand.parquet"
+  output_path: "backend/data/processed/features.parquet"
+  lag_days: [1, 7, 14, 21, 28]
+  rolling_windows: [7, 14, 28]
+
+train:
+  input_path: "backend/data/processed/features.parquet"
+  model_dir: "backend/models"
+  model_name: "random_forest_demand"
+  train_split_date: "2011-09-01"
+  val_split_date: "2011-10-15"
+  random_state: 42
+  n_estimators: 120
+  max_depth: 14
+  min_samples_split: 4
+
+evaluate:
+  test_split_date: "2011-10-15"
+  metrics_output: "backend/reports/metrics/evaluation_metrics.json"
+  comparison_output: "backend/reports/metrics/model_comparison.json"
+  figures_dir: "backend/reports/figures"

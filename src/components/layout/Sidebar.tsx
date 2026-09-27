@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -9,7 +10,9 @@ import {
   Settings,
   X,
   Activity,
+  CheckCircle2,
 } from 'lucide-react';
+import { checkBackendHealth } from '@/services/api';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -29,6 +32,15 @@ const navItems = [
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const location = useLocation();
+  const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkBackendHealth().then((res) => setIsBackendOnline(res.isOnline));
+    const interval = setInterval(() => {
+      checkBackendHealth().then((res) => setIsBackendOnline(res.isOnline));
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <>
@@ -54,7 +66,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             </div>
             <div>
               <span className="text-base font-semibold tracking-tight text-foreground">
-                StockSense
+                Morrow
               </span>
               <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 Demand Intelligence
@@ -108,12 +120,27 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Footer */}
         <div className="border-t border-sidebar-border p-4">
-          <div className="rounded-lg bg-secondary/50 p-3">
-            <p className="text-xs font-medium text-foreground">Demo Mode</p>
-            <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
-              Mock data is displayed. ML model integration is pending.
-            </p>
-          </div>
+          {isBackendOnline ? (
+            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Live ML Backend</p>
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                Connected to FastAPI · UCI Retail Dataset & RF Model Active
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg bg-secondary/50 p-3">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
+                <p className="text-xs font-medium text-foreground">Offline Fallback</p>
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                Connecting to backend at localhost:8000...
+              </p>
+            </div>
+          )}
         </div>
       </aside>
     </>

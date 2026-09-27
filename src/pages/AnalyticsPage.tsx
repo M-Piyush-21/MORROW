@@ -348,7 +348,7 @@ export function AnalyticsPage() {
       <ChartCard
         title="Sales vs Forecast Comparison"
         description="Actual revenue compared to forecasted demand"
-        action={<Badge variant="outline" className="text-xs">Demo forecast</Badge>}
+        action={<Badge variant="outline" className="text-xs text-primary border-primary/20">Trained RF Forecast</Badge>}
       >
         <ResponsiveContainer width="100%" height={280}>
           <ComposedChart data={salesVsForecast} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>

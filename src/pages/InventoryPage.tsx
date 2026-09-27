@@ -15,7 +15,7 @@ import {
   IndianRupee,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { getCategories, getSuppliers } from '@/services/mockApi';
+import { getCategories, getSuppliers } from '@/services/api';
 import { getSalesForProduct, generateForecastData, categoryNameById, supplierNameById } from '@/data/mockData';
 import type { Product, Category, Supplier, SortConfig, SortDirection } from '@/types';
 import { formatCurrency, formatNumber, formatShortDate } from '@/utils/format';

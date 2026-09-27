@@ -1,0 +1,142 @@
+schema: '2.0'
+stages:
+  prepare_data:
+    cmd: python3 backend/ml/prepare_data.py
+    deps:
+    - path: backend/data/raw/Online Retail.xlsx
+      hash: md5
+      md5: 8f8e6d94ba88f976f4d8290cb2dea7fd
+      size: 23715344
+      isexec: true
+    - path: backend/ml/prepare_data.py
+      hash: md5
+      md5: e157d343c855825cfa334971276d171f
+      size: 8065
+    - path: backend/ml/utils.py
+      hash: md5
+      md5: 329e9987bef7438c40ced5fcb9e469b5
+      size: 1076
+    params:
+      params.yaml:
+        prepare.min_history_days: 90
+        prepare.top_n_skus: 50
+    outs:
+    - path: backend/data/interim/cleaned_transactions.parquet
+      hash: md5
+      md5: 65bb74b4bced931d12c103ec337f4985
+      size: 3669686
+    - path: backend/data/processed/daily_demand.parquet
+      hash: md5
+      md5: f3f98dc8ca8cde011d1dae7f43b5bcfe
+      size: 137405
+    - path: backend/reports/figures/daily_sales_distribution.png
+      hash: md5
+      md5: fbb75e695998e63d54b5b97ad29f15e0
+      size: 60633
+    - path: backend/reports/metrics/data_quality.json
+      hash: md5
+      md5: f277b51bf25af4ffe6deb4063b6615fd
+      size: 639
+  build_features:
+    cmd: python3 backend/ml/build_features.py
+    deps:
+    - path: backend/data/processed/daily_demand.parquet
+      hash: md5
+      md5: f3f98dc8ca8cde011d1dae7f43b5bcfe
+      size: 137405
+    - path: backend/ml/build_features.py
+      hash: md5
+      md5: 8e70db6aae78a59b9916f8861f042768
+      size: 3019
+    - path: backend/ml/utils.py
+      hash: md5
+      md5: 329e9987bef7438c40ced5fcb9e469b5
+      size: 1076
+    params:
+      params.yaml:
+        features.lag_days:
+        - 1
+        - 7
+        - 14
+        - 21
+        - 28
+        features.rolling_windows:
+        - 7
+        - 14
+        - 28
+    outs:
+    - path: backend/data/processed/features.parquet
+      hash: md5
+      md5: 74e9bbfac9e479c2cfd268081fe99b0d
+      size: 741904
+  train:
+    cmd: python3 backend/ml/train.py
+    deps:
+    - path: backend/data/processed/features.parquet
+      hash: md5
+      md5: 74e9bbfac9e479c2cfd268081fe99b0d
+      size: 741904
+    - path: backend/ml/train.py
+      hash: md5
+      md5: 049792c3b600113c462a3a3a22f1de82
+      size: 5893
+    - path: backend/ml/utils.py
+      hash: md5
+      md5: 329e9987bef7438c40ced5fcb9e469b5
+      size: 1076
+    params:
+      params.yaml:
+        train.max_depth: 14
+        train.min_samples_split: 4
+        train.n_estimators: 120
+        train.random_state: 42
+        train.train_split_date: '2011-09-01'
+        train.val_split_date: '2011-10-15'
+    outs:
+    - path: backend/models/model_metadata.json
+      hash: md5
+      md5: dff9d4670c6bee27f15a77ec0077ed29
+      size: 727
+    - path: backend/models/random_forest_demand.joblib
+      hash: md5
+      md5: 99390a84035db7cd56fee58174ca2f8d
+      size: 12418641
+  evaluate:
+    cmd: python3 backend/ml/evaluate.py
+    deps:
+    - path: backend/data/processed/features.parquet
+      hash: md5
+      md5: 74e9bbfac9e479c2cfd268081fe99b0d
+      size: 741904
+    - path: backend/ml/evaluate.py
+      hash: md5
+      md5: 06dfded738846bd243517453a24fa0be
+      size: 8552
+    - path: backend/ml/utils.py
+      hash: md5
+      md5: 329e9987bef7438c40ced5fcb9e469b5
+      size: 1076
+    - path: backend/models/random_forest_demand.joblib
+      hash: md5
+      md5: 99390a84035db7cd56fee58174ca2f8d
+      size: 12418641
+    params:
+      params.yaml:
+        evaluate.test_split_date: '2011-10-15'
+    outs:
+    - path: backend/reports/figures/actual_vs_predicted.png
+      hash: md5
+      md5: 031e4780e416c9499d60467c1545b3b6
+      size: 224432
+    - path: backend/reports/figures/residual_distribution.png
+      hash: md5
+      md5: db89ddbb4285c2343366c3fc728536c8
+      size: 45124
+    - path: backend/reports/metrics/evaluation_metrics.json
+      hash: md5
+      md5: cecafa150b8c0abcf5e7ae35e941230b
+      size: 2939
+    - path: backend/reports/metrics/model_comparison.json
+      hash: md5
+      md5: 7469bf4880a99f57008ca3ccbd43dfa1
+      size: 388

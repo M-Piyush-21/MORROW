@@ -1,0 +1,20 @@
+[
+  {
+    "modelName": "Naive Seasonal Baseline (Lag-7)",
+    "mae": 80.64,
+    "rmse": 241.16,
+    "mape": 312.9,
+    "r2Score": -0.405,
+    "trainingTime": 0.01,
+    "status": "baseline"
+  },
+  {
+    "modelName": "Random Forest Regressor (Morrow)",
+    "mae": 67.45,
+    "rmse": 186.58,
+    "mape": 358.7,
+    "r2Score": 0.159,
+    "trainingTime": 1.05,
+    "status": "production"
+  }
+]

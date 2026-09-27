@@ -23,3 +23,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python & Virtualenv
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Data and Models
+backend/data/raw/*.xlsx
+backend/data/raw/*.csv
+*.xlsx
+backend/models/*.pkl
+backend/models/*.joblib
+mlruns/
+mlruns.db
+.pytest_cache/
+.dvc/cache/
+.dvc/tmp/

@@ -98,7 +98,7 @@ export function TopNav({ onMenuClick, dateRange, onDateRangeChange }: TopNavProp
       {/* Title & breadcrumb */}
       <div className="hidden md:block">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>StockSense</span>
+          <span>Morrow</span>
           <span>/</span>
           <span className="text-foreground font-medium">{breadcrumb}</span>
         </div>

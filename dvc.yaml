@@ -1,0 +1,68 @@
+stages:
+  prepare_data:
+    cmd: python3 backend/ml/prepare_data.py
+    deps:
+      - backend/data/raw/Online Retail.xlsx
+      - backend/ml/prepare_data.py
+      - backend/ml/utils.py
+    params:
+      - prepare.min_history_days
+      - prepare.top_n_skus
+    outs:
+      - backend/data/interim/cleaned_transactions.parquet
+      - backend/data/processed/daily_demand.parquet
+    metrics:
+      - backend/reports/metrics/data_quality.json:
+          cache: false
+    plots:
+      - backend/reports/figures/daily_sales_distribution.png:
+          cache: false
+
+  build_features:
+    cmd: python3 backend/ml/build_features.py
+    deps:
+      - backend/data/processed/daily_demand.parquet
+      - backend/ml/build_features.py
+      - backend/ml/utils.py
+    params:
+      - features.lag_days
+      - features.rolling_windows
+    outs:
+      - backend/data/processed/features.parquet
+
+  train:
+    cmd: python3 backend/ml/train.py
+    deps:
+      - backend/data/processed/features.parquet
+      - backend/ml/train.py
+      - backend/ml/utils.py
+    params:
+      - train.train_split_date
+      - train.val_split_date
+      - train.random_state
+      - train.n_estimators
+      - train.max_depth
+      - train.min_samples_split
+    outs:
+      - backend/models/random_forest_demand.joblib
+      - backend/models/model_metadata.json
+
+  evaluate:
+    cmd: python3 backend/ml/evaluate.py
+    deps:
+      - backend/models/random_forest_demand.joblib
+      - backend/data/processed/features.parquet
+      - backend/ml/evaluate.py
+      - backend/ml/utils.py
+    params:
+      - evaluate.test_split_date
+    metrics:
+      - backend/reports/metrics/evaluation_metrics.json:
+          cache: false
+      - backend/reports/metrics/model_comparison.json:
+          cache: false
+    plots:
+      - backend/reports/figures/actual_vs_predicted.png:
+          cache: false
+      - backend/reports/figures/residual_distribution.png:
+          cache: false
