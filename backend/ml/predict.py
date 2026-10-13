@@ -2,7 +2,10 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import joblib
+try:
+    import joblib
+except ImportError:
+    joblib = None
 import numpy as np
 import pandas as pd
 
@@ -23,17 +26,33 @@ class DemandPredictor:
         self.model_path = Path(model_path)
         self.metadata_path = Path(metadata_path)
         self.data_path = Path(data_path)
+        self.weights_path = self.model_path.parent / "rf_weights.npz"
         self.model = None
         self.metadata = {}
         self.history_df = None
         self._load()
 
     def _load(self):
-        if self.model_path.exists():
-            self.model = joblib.load(self.model_path)
-            logger.info(f"Loaded trained model from {self.model_path}")
-        else:
-            logger.warning(f"Model not found at {self.model_path}. Predictions will be unavailable or use fallback.")
+        # 1. Try loading fast lightweight weights without heavy ML dependencies
+        if self.weights_path.exists():
+            try:
+                from backend.ml.fast_rf import FastRandomForest
+                self.model = FastRandomForest(self.weights_path)
+                logger.info(f"Loaded fast Random Forest weights from {self.weights_path}")
+            except Exception as e:
+                logger.warning(f"FastRandomForest load note: {e}")
+                self.model = None
+
+        # 2. Fall back to standard joblib artifact if available
+        if self.model is None and self.model_path.exists() and joblib is not None:
+            try:
+                self.model = joblib.load(self.model_path)
+                logger.info(f"Loaded trained model from {self.model_path}")
+            except Exception as e:
+                logger.warning(f"Joblib load error: {e}")
+
+        if self.model is None:
+            logger.warning("No model loaded. Forecasts may fall back to rolling baseline.")
 
         if self.metadata_path.exists():
             self.metadata = load_json(str(self.metadata_path))

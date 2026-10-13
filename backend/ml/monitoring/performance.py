@@ -4,7 +4,10 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 import numpy as np
 import pandas as pd
-import joblib
+try:
+    import joblib
+except ImportError:
+    joblib = None
 
 # Add project root to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[3]))
@@ -38,14 +41,29 @@ def run_performance_monitoring(
     logger.info(f"Running realized forecast performance monitoring on {feat_path}...")
     if not Path(feat_path).exists():
         raise FileNotFoundError(f"Features file not found: {feat_path}")
-    if not Path(mod_path).exists():
-        raise FileNotFoundError(f"Model file not found: {mod_path}")
+
+    weights_path = Path("backend/models/rf_weights.npz")
+    model = None
+    if weights_path.exists():
+        try:
+            from backend.ml.fast_rf import FastRandomForest
+            model = FastRandomForest(weights_path)
+        except Exception:
+            model = None
+
+    if model is None and Path(mod_path).exists() and joblib is not None:
+        try:
+            model = joblib.load(mod_path)
+        except Exception:
+            model = None
+
+    if model is None:
+        raise FileNotFoundError(f"Neither fast weights nor joblib model found: {weights_path}, {mod_path}")
 
     df = pd.read_parquet(feat_path)
     df["Date"] = pd.to_datetime(df["Date"])
     test_df = df[df["Date"] >= pd.to_datetime(test_split_date)].copy()
 
-    model = joblib.load(mod_path)
     test_df["prediction"] = np.clip(model.predict(test_df[FEATURE_COLUMNS]), 0, None)
     test_df["error"] = test_df["quantity"] - test_df["prediction"]
     test_df["abs_error"] = np.abs(test_df["error"])

@@ -140,15 +140,31 @@ class ModelService:
         ]
 
     def get_actual_vs_predicted(self, product_id: str) -> List[ActualVsPredictedPoint]:
-        # Return test period actual vs predicted for the requested product
         data_path = Path("backend/data/processed/features.parquet")
         model_path = settings.MODEL_PATH
-        if not data_path.exists() or not model_path.exists():
+        if not data_path.exists():
             return []
 
-        import joblib
+        weights_path = Path("backend/models/rf_weights.npz")
+        model = None
+        if weights_path.exists():
+            try:
+                from backend.ml.fast_rf import FastRandomForest
+                model = FastRandomForest(weights_path)
+            except Exception:
+                model = None
+
+        if model is None and model_path.exists():
+            try:
+                import joblib
+                model = joblib.load(model_path)
+            except Exception:
+                model = None
+
+        if model is None:
+            return []
+
         from backend.ml.train import FEATURE_COLUMNS
-        model = joblib.load(model_path)
         df = pd.read_parquet(data_path)
         df["Date"] = pd.to_datetime(df["Date"])
         test_df = df[(df["sku"] == product_id) & (df["Date"] >= pd.to_datetime("2011-10-15"))].sort_values("Date").tail(30)

@@ -4,7 +4,10 @@ import shutil
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
-import joblib
+try:
+    import joblib
+except ImportError:
+    joblib = None
 import numpy as np
 try:
     import mlflow

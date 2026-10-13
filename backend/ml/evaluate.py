@@ -3,10 +3,16 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, List, Optional
-import joblib
+try:
+    import joblib
+except ImportError:
+    joblib = None
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+try:
+    from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+except ImportError:
+    mean_absolute_error = None
 try:
     import matplotlib
     matplotlib.use("Agg")

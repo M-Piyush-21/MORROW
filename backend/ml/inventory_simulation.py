@@ -3,7 +3,10 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 import numpy as np
 import pandas as pd
-import joblib
+try:
+    import joblib
+except ImportError:
+    joblib = None
 
 # Add project root to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[2]))
@@ -32,6 +35,7 @@ class InventorySimulator:
     ):
         self.features_path = Path(features_path)
         self.model_path = Path(model_path)
+        self.weights_path = self.model_path.parent / "rf_weights.npz"
         self.test_start_date = test_start_date
         self.df = None
         self.model = None
@@ -41,8 +45,20 @@ class InventorySimulator:
         if self.features_path.exists():
             self.df = pd.read_parquet(self.features_path)
             self.df["Date"] = pd.to_datetime(self.df["Date"])
-        if self.model_path.exists():
-            self.model = joblib.load(self.model_path)
+
+        if self.weights_path.exists():
+            try:
+                from backend.ml.fast_rf import FastRandomForest
+                self.model = FastRandomForest(self.weights_path)
+            except Exception as e:
+                logger.warning(f"FastRandomForest load note: {e}")
+                self.model = None
+
+        if self.model is None and self.model_path.exists() and joblib is not None:
+            try:
+                self.model = joblib.load(self.model_path)
+            except Exception as e:
+                logger.warning(f"Joblib load note: {e}")
 
     def run_backtest(
         self,

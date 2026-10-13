@@ -1,11 +1,17 @@
 import os
 import sys
 from pathlib import Path
-import joblib
+try:
+    import joblib
+except ImportError:
+    joblib = None
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+try:
+    from sklearn.ensemble import RandomForestRegressor
+    from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+except ImportError:
+    RandomForestRegressor = None
 try:
     import mlflow
     import mlflow.sklearn

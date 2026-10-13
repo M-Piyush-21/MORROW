@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-13T08:17:01.504741+00:00",
+  "timestamp": "2026-10-13T08:31:40.780093+00:00",
   "model_name": "RandomForestRegressor",
   "candidate_version": "v1.2.0",
   "decision": "APPROVED",
@@ -82,13 +82,13 @@
   },
   "mlflow_registration": {
     "registered_model": "morrow_demand_forecasting_model",
-    "version": 16,
+    "version": 17,
     "alias": "@production",
     "tracking_uri": "sqlite:///mlruns.db"
   },
   "rollback_target": {
-    "backup_path": "backend/models/archived/random_forest_demand_prev_20261013_081701.joblib",
-    "archived_at": "2026-10-13T08:17:01.480022+00:00",
+    "backup_path": "backend/models/archived/random_forest_demand_prev_20261013_083140.joblib",
+    "archived_at": "2026-10-13T08:31:40.756589+00:00",
     "description": "Pre-promotion snapshot for fast single-command rollback."
   }
 }
