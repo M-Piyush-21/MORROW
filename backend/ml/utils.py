@@ -3,8 +3,6 @@ import logging
 from pathlib import Path
 from typing import Any, Dict
 
-import yaml
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -18,9 +16,18 @@ def get_logger(name: str) -> logging.Logger:
 def load_params(params_path: str = "params.yaml") -> Dict[str, Any]:
     path = Path(params_path)
     if not path.exists():
-        raise FileNotFoundError(f"Parameters file not found at: {params_path}")
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        root_path = Path(__file__).resolve().parents[2] / params_path
+        if root_path.exists():
+            path = root_path
+        else:
+            return {}
+    try:
+        import yaml
+        with open(path, "r", encoding="utf-8") as f:
+            loaded = yaml.safe_load(f)
+            return loaded if isinstance(loaded, dict) else {}
+    except Exception:
+        return {}
 
 
 def save_json(data: Any, output_path: str) -> None:
@@ -33,6 +40,10 @@ def save_json(data: Any, output_path: str) -> None:
 def load_json(input_path: str) -> Any:
     path = Path(input_path)
     if not path.exists():
-        raise FileNotFoundError(f"JSON file not found at: {input_path}")
+        root_path = Path(__file__).resolve().parents[2] / input_path
+        if root_path.exists():
+            path = root_path
+        else:
+            raise FileNotFoundError(f"JSON file not found at: {input_path}")
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)

@@ -15,6 +15,5 @@ Dockerfile*
 docker-compose.yml
 start.sh
 pytest.ini
-params.yaml
 dvc.yaml
 dvc.lock

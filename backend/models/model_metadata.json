@@ -1,0 +1,60 @@
+{
+  "model_name": "RandomForestRegressor",
+  "model_version": "v1.20",
+  "run_id": "05a6d352094b4ae29251b9d4346fe43c",
+  "created_at": "2026-10-13T03:05:01.168277",
+  "feature_names": [
+    "lag_1",
+    "lag_7",
+    "lag_14",
+    "lag_21",
+    "lag_28",
+    "rolling_mean_7",
+    "rolling_std_7",
+    "rolling_mean_14",
+    "rolling_std_14",
+    "rolling_mean_28",
+    "rolling_std_28",
+    "day_of_week",
+    "day_of_month",
+    "month",
+    "is_weekend",
+    "unit_price"
+  ],
+  "train_split_date": "2011-09-01",
+  "val_split_date": "2011-10-15",
+  "validation_metrics": {
+    "mae": 54.86501261508399,
+    "rmse": 116.20885638459241,
+    "r2": 0.03703484024941062,
+    "wape": 0.9097235305219645
+  },
+  "status": "ROLLED_BACK",
+  "prediction_interval_calibration": {
+    "nominal_coverage_pct": 80.0,
+    "empirical_coverage_pct": 76.68,
+    "mean_interval_width": 109.98,
+    "calibration_source": "Validation split (2011-09-01 to 2011-10-15) residual empirical quantiles [10%, 90%]",
+    "residual_lower_q10": -73.12,
+    "residual_upper_q90": 59.42,
+    "status": "calibrated_and_tested"
+  },
+  "promotion_status": "APPROVED",
+  "promoted_at": "2026-10-13T08:56:01.660259+00:00",
+  "promotion_gates_passed": 8,
+  "total_promotion_gates": 8,
+  "rollback_target": {
+    "backup_path": "backend/models/archived/random_forest_demand_prev_20261013_085601.joblib",
+    "archived_at": "2026-10-13T08:56:01.634670+00:00",
+    "description": "Pre-promotion snapshot for fast single-command rollback."
+  },
+  "training_data_ref": "dvc://backend/data/raw/Online Retail.xlsx.dvc@rev3",
+  "feature_version": "features-v2-leak-free-lags-rolling",
+  "mlflow_registered_name": "morrow_demand_forecasting_model",
+  "mlflow_version": "20",
+  "random_seed": 42,
+  "rollback_executed_at": "2026-10-13T08:56:01.623163+00:00",
+  "rollback_source_file": "random_forest_demand_prev_20261013_075450.joblib",
+  "rollback_reason": "Pytest controlled rollback test",
+  "restored_mlflow_version": 18
+}
