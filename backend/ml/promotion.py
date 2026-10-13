@@ -4,8 +4,12 @@ import shutil
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
-import mlflow
-from mlflow.tracking import MlflowClient
+try:
+    import mlflow
+    from mlflow.tracking import MlflowClient
+except ImportError:
+    mlflow = None
+    MlflowClient = None
 
 # Add project root to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[2]))
@@ -190,10 +194,16 @@ def evaluate_and_promote_model(
 
     logger.info(f"Model Promotion Decision: {decision_status} - {reason}")
 
-    # Register and transition in MLflow if approved
+    # Register and transition in MLflow if approved and available
+    client = None
     mlflow_uri = os.getenv("MLFLOW_TRACKING_URI", "sqlite:///mlruns.db")
-    mlflow.set_tracking_uri(mlflow_uri)
-    client = MlflowClient()
+    if mlflow is not None and MlflowClient is not None:
+        try:
+            mlflow.set_tracking_uri(mlflow_uri)
+            client = MlflowClient()
+        except Exception as e:
+            logger.warning(f"Could not connect to MLflow tracking: {e}")
+            client = None
 
     registered_model_name = "morrow_demand_forecasting_model"
     model_version_num = None
@@ -216,58 +226,61 @@ def evaluate_and_promote_model(
             }
             logger.info(f"Created rollback backup: {backup_file}")
 
-        try:
-            # Register candidate model in MLflow Model Registry
-            run_id = run_meta.get("run_id") or eval_data.get("run_id")
-            if not run_id:
-                # Find most recent finished run in experiment
-                exp = client.get_experiment_by_name(os.getenv("MLFLOW_EXPERIMENT_NAME", "morrow_demand_forecasting"))
-                if exp:
-                    recent_runs = client.search_runs(exp.experiment_id, max_results=1)
-                    if recent_runs:
-                        run_id = recent_runs[0].info.run_id
-
-            # Ensure registered model exists
+        if client is not None:
             try:
-                client.get_registered_model(registered_model_name)
-            except Exception:
-                client.create_registered_model(
-                    registered_model_name,
-                    description="Production retail demand forecasting model for SKU inventory optimization.",
-                )
+                # Register candidate model in MLflow Model Registry
+                run_id = run_meta.get("run_id") or eval_data.get("run_id")
+                if not run_id:
+                    # Find most recent finished run in experiment
+                    exp = client.get_experiment_by_name(os.getenv("MLFLOW_EXPERIMENT_NAME", "morrow_demand_forecasting"))
+                    if exp:
+                        recent_runs = client.search_runs(exp.experiment_id, max_results=1)
+                        if recent_runs:
+                            run_id = recent_runs[0].info.run_id
 
-            # Create new model version in registry
-            source_uri = f"runs:/{run_id}/model" if run_id else str(model_artifact_path)
-            try:
-                mv = client.create_model_version(
-                    name=registered_model_name,
-                    source=source_uri,
-                    run_id=run_id,
-                    description=f"Automated promotion via pipeline gate validation at {datetime.now(timezone.utc).isoformat()}.",
-                    tags={
-                        "candidate_wape": str(cand_wape),
-                        "baseline_lift_pct": f"{actual_lift_pct:.2f}%",
-                        "status": "Production",
-                        "data_version": str(run_meta.get("data_version", "v1")),
-                        "feature_version": str(run_meta.get("feature_version", "v2")),
-                    },
-                )
-                model_version_num = mv.version
-                
-                # Set alias @production and @champion
+                # Ensure registered model exists
                 try:
-                    client.set_registered_model_alias(registered_model_name, "production", model_version_num)
-                    client.set_registered_model_alias(registered_model_name, "champion", model_version_num)
-                except Exception as e:
-                    logger.warning(f"Could not set alias: {e}")
+                    client.get_registered_model(registered_model_name)
+                except Exception:
+                    client.create_registered_model(
+                        registered_model_name,
+                        description="Production retail demand forecasting model for SKU inventory optimization.",
+                    )
 
-                logger.info(f"Registered model {registered_model_name} version {model_version_num} as @production")
+                # Create new model version in registry
+                source_uri = f"runs:/{run_id}/model" if run_id else str(model_artifact_path)
+                try:
+                    mv = client.create_model_version(
+                        name=registered_model_name,
+                        source=source_uri,
+                        run_id=run_id,
+                        description=f"Automated promotion via pipeline gate validation at {datetime.now(timezone.utc).isoformat()}.",
+                        tags={
+                            "candidate_wape": str(cand_wape),
+                            "baseline_lift_pct": f"{actual_lift_pct:.2f}%",
+                            "status": "Production",
+                            "data_version": str(run_meta.get("data_version", "v1")),
+                            "feature_version": str(run_meta.get("feature_version", "v2")),
+                        },
+                    )
+                    model_version_num = mv.version
+                    
+                    # Set alias @production and @champion
+                    try:
+                        client.set_registered_model_alias(registered_model_name, "production", model_version_num)
+                        client.set_registered_model_alias(registered_model_name, "champion", model_version_num)
+                    except Exception as e:
+                        logger.warning(f"Could not set alias: {e}")
+
+                    logger.info(f"Registered model {registered_model_name} version {model_version_num} as @production")
+                except Exception as e:
+                    logger.warning(f"MLflow model version creation note: {e}")
+                    model_version_num = "v1.2.0"
             except Exception as e:
-                logger.warning(f"MLflow model version creation note: {e}")
+                logger.error(f"Error communicating with MLflow registry: {e}")
                 model_version_num = "v1.2.0"
-        except Exception as e:
-            logger.error(f"Error communicating with MLflow registry: {e}")
-            model_version_num = "v1.2.0"
+        else:
+            model_version_num = run_meta.get("model_version", "v1.2.0")
 
         # Update local model metadata JSON
         if metadata_file.exists():

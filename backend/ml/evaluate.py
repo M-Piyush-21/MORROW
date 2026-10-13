@@ -7,10 +7,17 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import mlflow
+try:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+except ImportError:
+    plt = None
+
+try:
+    import mlflow
+except ImportError:
+    mlflow = None
 
 # Add project root to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[2]))

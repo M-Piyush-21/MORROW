@@ -6,8 +6,11 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-import mlflow
-import mlflow.sklearn
+try:
+    import mlflow
+    import mlflow.sklearn
+except ImportError:
+    mlflow = None
 
 # Add project root to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[2]))

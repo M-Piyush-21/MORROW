@@ -6,8 +6,12 @@ from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 import joblib
 import numpy as np
-import mlflow
-from mlflow.tracking import MlflowClient
+try:
+    import mlflow
+    from mlflow.tracking import MlflowClient
+except ImportError:
+    mlflow = None
+    MlflowClient = None
 
 # Add project root to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[2]))
@@ -67,26 +71,26 @@ def rollback_to_previous_approved_model(
     logger.info(f"Successfully restored approved model from {latest_backup} to {target_path}")
 
     # 4. Update MLflow Model Registry alias if possible
-    mlflow_uri = os.getenv("MLFLOW_TRACKING_URI", "sqlite:///mlruns.db")
-    mlflow.set_tracking_uri(mlflow_uri)
-    client = MlflowClient()
-    registered_model_name = "morrow_demand_forecasting_model"
     restored_version = None
-
-    try:
-        versions = client.search_model_versions(f"name='{registered_model_name}'")
-        if versions:
-            # Sort by version descending, pick previous version
-            sorted_versions = sorted(versions, key=lambda v: int(v.version), reverse=True)
-            if len(sorted_versions) > 1:
-                previous_v = sorted_versions[1]
-                client.set_registered_model_alias(registered_model_name, "production", previous_v.version)
-                restored_version = previous_v.version
-                logger.info(f"MLflow alias @production reverted to version {restored_version}")
-            elif len(sorted_versions) == 1:
-                restored_version = sorted_versions[0].version
-    except Exception as e:
-        logger.warning(f"MLflow registry alias update note during rollback: {e}")
+    if mlflow is not None and MlflowClient is not None:
+        try:
+            mlflow_uri = os.getenv("MLFLOW_TRACKING_URI", "sqlite:///mlruns.db")
+            mlflow.set_tracking_uri(mlflow_uri)
+            client = MlflowClient()
+            registered_model_name = "morrow_demand_forecasting_model"
+            versions = client.search_model_versions(f"name='{registered_model_name}'")
+            if versions:
+                # Sort by version descending, pick previous version
+                sorted_versions = sorted(versions, key=lambda v: int(v.version), reverse=True)
+                if len(sorted_versions) > 1:
+                    previous_v = sorted_versions[1]
+                    client.set_registered_model_alias(registered_model_name, "production", previous_v.version)
+                    restored_version = previous_v.version
+                    logger.info(f"MLflow alias @production reverted to version {restored_version}")
+                elif len(sorted_versions) == 1:
+                    restored_version = sorted_versions[0].version
+        except Exception as e:
+            logger.warning(f"MLflow registry alias update note during rollback: {e}")
 
     # 5. Update local model metadata
     import json
