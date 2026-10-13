@@ -46,7 +46,11 @@ class ModelService:
     def get_comparison(self) -> List[ModelComparisonRow]:
         if settings.MODEL_COMPARISON_PATH.exists():
             data = load_json(str(settings.MODEL_COMPARISON_PATH))
-            return [ModelComparisonRow(**row) for row in data]
+            if isinstance(data, list):
+                return [ModelComparisonRow.model_validate(row) for row in data]
+            if isinstance(data, dict):
+                rows = data.get("models") or data.get("comparison") or list(data.values())
+                return [ModelComparisonRow.model_validate(row) for row in rows if isinstance(row, dict)]
 
         return [
             ModelComparisonRow(

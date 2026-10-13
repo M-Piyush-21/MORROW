@@ -23,14 +23,14 @@ def load_params(params_path: str = "params.yaml") -> Dict[str, Any]:
         return yaml.safe_load(f)
 
 
-def save_json(data: Dict[str, Any], output_path: str) -> None:
+def save_json(data: Any, output_path: str) -> None:
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, default=str)
 
 
-def load_json(input_path: str) -> Dict[str, Any]:
+def load_json(input_path: str) -> Any:
     path = Path(input_path)
     if not path.exists():
         raise FileNotFoundError(f"JSON file not found at: {input_path}")
