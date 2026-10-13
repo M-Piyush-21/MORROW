@@ -2,11 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "functions": {
-    "api/**/*.py": {
-      "maxDuration": 30,
-      "excludeFiles": "{node_modules/**,docs/**,backend/tests/**,backend/reports/figures/**,src/**,dist/**,*.md,*.lock,*.yaml,dvc.*,start.sh,Dockerfile*}"
-    },
-    "api/*.py": {
+    "api/index.py": {
       "maxDuration": 30,
       "excludeFiles": "{node_modules/**,docs/**,backend/tests/**,backend/reports/figures/**,src/**,dist/**,*.md,*.lock,*.yaml,dvc.*,start.sh,Dockerfile*}"
     }
