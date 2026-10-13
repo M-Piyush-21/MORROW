@@ -1,6 +1,6 @@
 {
   "model_name": "RandomForestRegressor",
-  "model_version": "v1.20",
+  "model_version": "v1.23",
   "run_id": "05a6d352094b4ae29251b9d4346fe43c",
   "created_at": "2026-10-13T03:05:01.168277",
   "feature_names": [
@@ -40,21 +40,21 @@
     "status": "calibrated_and_tested"
   },
   "promotion_status": "APPROVED",
-  "promoted_at": "2026-10-13T08:56:01.660259+00:00",
+  "promoted_at": "2026-10-13T09:37:32.430378+00:00",
   "promotion_gates_passed": 8,
   "total_promotion_gates": 8,
   "rollback_target": {
-    "backup_path": "backend/models/archived/random_forest_demand_prev_20261013_085601.joblib",
-    "archived_at": "2026-10-13T08:56:01.634670+00:00",
+    "backup_path": "backend/models/archived/random_forest_demand_prev_20261013_093732.joblib",
+    "archived_at": "2026-10-13T09:37:32.406717+00:00",
     "description": "Pre-promotion snapshot for fast single-command rollback."
   },
   "training_data_ref": "dvc://backend/data/raw/Online Retail.xlsx.dvc@rev3",
   "feature_version": "features-v2-leak-free-lags-rolling",
   "mlflow_registered_name": "morrow_demand_forecasting_model",
-  "mlflow_version": "20",
+  "mlflow_version": "23",
   "random_seed": 42,
-  "rollback_executed_at": "2026-10-13T08:56:01.623163+00:00",
+  "rollback_executed_at": "2026-10-13T09:37:32.393405+00:00",
   "rollback_source_file": "random_forest_demand_prev_20261013_075450.joblib",
   "rollback_reason": "Pytest controlled rollback test",
-  "restored_mlflow_version": 18
+  "restored_mlflow_version": 21
 }

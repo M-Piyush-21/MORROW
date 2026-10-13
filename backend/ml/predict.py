@@ -11,7 +11,7 @@ import pandas as pd
 
 # Add project root to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[2]))
-from backend.ml.train import FEATURE_COLUMNS
+from backend.ml.feature_columns import FEATURE_COLUMNS
 from backend.ml.utils import get_logger, load_json
 
 logger = get_logger("predict")

@@ -6,6 +6,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Morrow — AI Demand Forecasting &amp; Inventory Intelligence</title>
     <meta name="description" content="AI-powered demand forecasting and inventory intelligence platform for retail businesses." />
+    <script>
+      (function () {
+        var host = location.hostname;
+        if (host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0") return;
+        var controller = new AbortController();
+        var timer = setTimeout(function () { controller.abort(); }, 20000);
+        window.__morrowHealth = fetch("/api/health", {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          signal: controller.signal
+        }).finally(function () {
+          clearTimeout(timer);
+        }).then(function (res) {
+          var type = res.headers.get("content-type") || "";
+          if (!res.ok || type.indexOf("html") !== -1) return { isOnline: false };
+          return res.json().then(function (body) {
+            return { isOnline: !!(body && body.status === "healthy"), details: body };
+          });
+        }).catch(function () {
+          return { isOnline: false };
+        });
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">

@@ -35,11 +35,23 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
 
   useEffect(() => {
-    checkBackendHealth().then((res) => setIsBackendOnline(res.isOnline));
-    const interval = setInterval(() => {
-      checkBackendHealth().then((res) => setIsBackendOnline(res.isOnline));
-    }, 15000);
-    return () => clearInterval(interval);
+    let cancelled = false;
+    let timer = 0;
+
+    const poll = () => {
+      checkBackendHealth({ fresh: true }).then((res) => {
+        if (cancelled) return;
+        setIsBackendOnline(res.isOnline);
+        // Cold starts used to miss a 7s timeout and then wait 15s. Retry quickly until connected.
+        timer = window.setTimeout(poll, res.isOnline ? 15000 : 2000);
+      });
+    };
+
+    poll();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, []);
 
   return (

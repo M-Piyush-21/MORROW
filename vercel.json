@@ -1,6 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{node_modules/**,dist/**,.git/**,docs/**,mlruns/**,backend/models/archived/**,backend/models/quarantined/**,backend/reports/figures/**}"
+    }
+  },
   "rewrites": [
     {
       "source": "/api",

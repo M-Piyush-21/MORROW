@@ -88,21 +88,104 @@ export const API_CONFIG = {
   },
 } as const;
 
-export async function checkBackendHealth(): Promise<{ isOnline: boolean; details?: any }> {
+type BackendHealth = { isOnline: boolean; details?: any };
+
+// Same-origin /api is the Vercel deployment. Local dev talks to an already-running server.
+const SAME_ORIGIN_API = API_BASE_URL.startsWith('/');
+const HEALTH_TIMEOUT_MS = SAME_ORIGIN_API ? 20000 : 7000;
+const ONLINE_CACHE_MS = 15000;
+
+let healthInflight: Promise<BackendHealth> | null = null;
+let healthCache: { until: number; result: BackendHealth } | null = null;
+let connectedOnce = false;
+
+function takeEarlyHealth(): Promise<BackendHealth> | null {
+  if (!SAME_ORIGIN_API || typeof window === 'undefined') return null;
+  const win = window as Window & { __morrowHealth?: Promise<BackendHealth> };
+  const pending = win.__morrowHealth;
+  if (!pending) return null;
+  delete win.__morrowHealth;
+  return pending;
+}
+
+async function fetchHealth(timeoutMs: number = HEALTH_TIMEOUT_MS): Promise<BackendHealth> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 7000);
     const res = await fetch(`${API_BASE_URL}/health`, {
       signal: controller.signal,
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
     });
-    clearTimeout(timeoutId);
-    if (res.ok) {
-      const data = await res.json();
-      return { isOnline: true, details: data };
-    }
-    return { isOnline: false };
+    const type = res.headers.get('content-type') || '';
+    if (!res.ok || type.includes('text/html')) return { isOnline: false };
+    const data = await res.json();
+    if (data?.status !== 'healthy') return { isOnline: false, details: data };
+    return { isOnline: true, details: data };
   } catch {
     return { isOnline: false };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+function startHealthCheck(timeoutMs: number = HEALTH_TIMEOUT_MS): Promise<BackendHealth> {
+  if (!healthInflight) {
+    const early = takeEarlyHealth();
+    healthInflight = (early ?? fetchHealth(timeoutMs))
+      .then((result) => {
+        if (result.isOnline) {
+          connectedOnce = true;
+          healthCache = { until: Date.now() + ONLINE_CACHE_MS, result };
+        } else {
+          healthCache = null;
+        }
+        return result;
+      })
+      .finally(() => {
+        healthInflight = null;
+      });
+  }
+  return healthInflight;
+}
+
+export function checkBackendHealth(options?: { fresh?: boolean; timeoutMs?: number }): Promise<BackendHealth> {
+  if (!options?.fresh && healthCache && Date.now() < healthCache.until) {
+    return Promise.resolve(healthCache.result);
+  }
+  return startHealthCheck(options?.timeoutMs ?? HEALTH_TIMEOUT_MS);
+}
+
+function timeoutFor(explicitMs: number): number {
+  if (!SAME_ORIGIN_API) return explicitMs;
+  // One cold instance can spend several seconds importing after the process is up.
+  return Math.max(explicitMs, 20000);
+}
+
+async function apiFetch(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  // The first same-origin call waits for one health check so the browser does not
+  // boot several cold Python instances at once. Later calls reuse the warm instance.
+  if (SAME_ORIGIN_API && !connectedOnce) {
+    let health = await checkBackendHealth();
+    if (!health.isOnline) {
+      // The first attempt often boots the instance even if the browser stopped waiting.
+      await new Promise((resolve) => setTimeout(resolve, 750));
+      health = await checkBackendHealth({ fresh: true, timeoutMs: 8000 });
+    }
+    if (!health.isOnline) {
+      throw new Error('backend-offline');
+    }
+  }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutFor(timeoutMs));
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+      cache: 'no-store',
+    });
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
@@ -113,13 +196,11 @@ async function fetchWithFallback<T>(
   timeoutMs: number = 8000,
 ): Promise<T> {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-      signal: controller.signal,
-      headers: { Accept: 'application/json' },
-    });
-    clearTimeout(timeoutId);
+    const res = await apiFetch(
+      `${API_BASE_URL}${endpoint}`,
+      { headers: { Accept: 'application/json' } },
+      timeoutMs,
+    );
 
     if (res.ok) {
       return await res.json();
@@ -238,18 +319,18 @@ export async function runInventorySimulation(
   scenario: Partial<SimulationScenarioInputs>,
 ): Promise<InventorySimulationResponse> {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
-    const res = await fetch(`${API_BASE_URL}/inventory/simulate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+    const res = await apiFetch(
+      `${API_BASE_URL}/inventory/simulate`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(scenario),
       },
-      body: JSON.stringify(scenario),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+      12000,
+    );
     if (res.ok) {
       return await res.json();
     }
@@ -284,10 +365,14 @@ export async function getModelPromotionStatus(): Promise<ModelPromotionResponse>
 
 export async function promoteCandidateModel(): Promise<ModelPromotionResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/model/promote`, {
-      method: 'POST',
-      headers: { Accept: 'application/json' },
-    });
+    const res = await apiFetch(
+      `${API_BASE_URL}/model/promote`,
+      {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+      },
+      8000,
+    );
     if (res.ok) {
       return await res.json();
     }
@@ -299,10 +384,14 @@ export async function promoteCandidateModel(): Promise<ModelPromotionResponse> {
 
 export async function rollbackModel(reason: string = 'User initiated rollback via UI'): Promise<ModelRollbackResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/model/rollback?reason=${encodeURIComponent(reason)}`, {
-      method: 'POST',
-      headers: { Accept: 'application/json' },
-    });
+    const res = await apiFetch(
+      `${API_BASE_URL}/model/rollback?reason=${encodeURIComponent(reason)}`,
+      {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+      },
+      8000,
+    );
     if (res.ok) {
       return await res.json();
     }
@@ -373,14 +462,18 @@ export async function submitForecastFeedback(
   entry: FeedbackSubmissionRequest,
 ): Promise<FeedbackLogEntry> {
   try {
-    const res = await fetch(`${API_BASE_URL}/monitoring/feedback`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+    const res = await apiFetch(
+      `${API_BASE_URL}/monitoring/feedback`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(entry),
       },
-      body: JSON.stringify(entry),
-    });
+      8000,
+    );
     if (res.ok) {
       return await res.json();
     }
@@ -442,14 +535,18 @@ export async function evaluateReplenishmentPolicy(
   data: ReplenishmentEvaluationRequest,
 ): Promise<ReplenishmentEvaluationResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/restock/evaluate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
+    const res = await apiFetch(
+      `${API_BASE_URL}/restock/evaluate`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
-    });
+      8000,
+    );
     if (res.ok) {
       return await res.json();
     }

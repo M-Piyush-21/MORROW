@@ -20,18 +20,10 @@ except ImportError:
 
 # Add project root to sys.path
 sys.path.append(str(Path(__file__).resolve().parents[2]))
+from backend.ml.feature_columns import FEATURE_COLUMNS
 from backend.ml.utils import get_logger, load_params, save_json
 
 logger = get_logger("train")
-
-FEATURE_COLUMNS = [
-    "lag_1", "lag_7", "lag_14", "lag_21", "lag_28",
-    "rolling_mean_7", "rolling_std_7",
-    "rolling_mean_14", "rolling_std_14",
-    "rolling_mean_28", "rolling_std_28",
-    "day_of_week", "day_of_month", "month", "is_weekend",
-    "unit_price",
-]
 
 def calculate_wape(y_true, y_pred) -> float:
     denom = np.sum(np.abs(y_true))

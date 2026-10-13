@@ -1,6 +1,5 @@
-from fastapi import APIRouter, HTTPException, Query, status
-from typing import Dict, Any, List, Optional
-from pathlib import Path
+from fastapi import APIRouter, Query, status
+from typing import List
 import json
 
 from backend.app.schemas import (
@@ -13,12 +12,6 @@ from backend.app.schemas import (
     FeedbackSubmissionRequest,
 )
 from backend.app.config import settings
-from backend.ml.monitoring.data_quality import run_data_quality_audit
-from backend.ml.monitoring.drift import run_drift_monitoring
-from backend.ml.monitoring.performance import run_performance_monitoring
-from backend.ml.monitoring.service import get_service_metrics
-from backend.ml.monitoring.alerts import generate_system_alerts
-from backend.ml.monitoring.feedback import get_feedback_records, log_feedback_entry
 
 router = APIRouter(prefix="/monitoring", tags=["MLOps Monitoring & Feedback"])
 
@@ -33,6 +26,7 @@ def get_data_quality_audit():
                 return json.load(f)
         except Exception:
             pass
+    from backend.ml.monitoring.data_quality import run_data_quality_audit
     return run_data_quality_audit()
 
 @router.get("/drift", response_model=FeatureDriftResponse)
@@ -45,6 +39,7 @@ def get_feature_drift():
                 return json.load(f)
         except Exception:
             pass
+    from backend.ml.monitoring.drift import run_drift_monitoring
     return run_drift_monitoring()
 
 @router.get("/performance", response_model=PerformanceMonitoringResponse)
@@ -57,11 +52,13 @@ def get_performance_monitoring():
                 return json.load(f)
         except Exception:
             pass
+    from backend.ml.monitoring.performance import run_performance_monitoring
     return run_performance_monitoring()
 
 @router.get("/service", response_model=ServiceMonitoringResponse)
 def get_service_health_and_latency():
     """Returns API latency percentiles (p50, p95, p99), error rates, request volume, and model health."""
+    from backend.ml.monitoring.service import get_service_metrics
     return get_service_metrics()
 
 @router.get("/alerts", response_model=AlertsListResponse)
@@ -75,17 +72,20 @@ def get_active_alerts():
                 return json.load(f)
         except Exception:
             pass
+    from backend.ml.monitoring.alerts import generate_system_alerts
     alerts_list = generate_system_alerts()
     return {"timestamp": "2026-10-13T00:00:00Z", "total_alerts": len(alerts_list), "alerts": alerts_list}
 
 @router.get("/feedback", response_model=List[FeedbackLogEntry])
 def get_forecast_feedback_log(limit: int = Query(50, ge=1, le=200)):
     """Retrieves chronological operational feedback log records."""
+    from backend.ml.monitoring.feedback import get_feedback_records
     return get_feedback_records(limit=limit)
 
 @router.post("/feedback", response_model=FeedbackLogEntry, status_code=status.HTTP_201_CREATED)
 def submit_forecast_feedback(req: FeedbackSubmissionRequest):
     """Submits and appends a realized operational feedback entry into the feedback loop log."""
+    from backend.ml.monitoring.feedback import log_feedback_entry
     entry = log_feedback_entry(
         sku=req.sku,
         model_version=req.modelVersion,
