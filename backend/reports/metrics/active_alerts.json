@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-10-12T21:22:25.128296+00:00",
+  "total_alerts": 3,
+  "alerts": [
+    {
+      "alert_id": "ALT-DQ-SPIKE-001",
+      "timestamp": "2026-10-12T21:22:25.128143+00:00",
+      "category": "data_quality",
+      "severity": "WARNING",
+      "what_changed": "Detected 10 single-day transaction volume spikes exceeding 5x SKU Interquartile Range.",
+      "affected_entities": [
+        "15036"
+      ],
+      "recommended_action": "Verify with commercial merchandising if bulk wholesale orders or clearance promotions occurred before updating baseline safety stocks.",
+      "status": "ACTIVE"
+    },
+    {
+      "alert_id": "ALT-DRIFT-HIGH-002",
+      "timestamp": "2026-10-12T21:22:25.128218+00:00",
+      "category": "feature_drift",
+      "severity": "WARNING",
+      "what_changed": "Significant distribution shift (PSI >= 0.25) observed in feature(s): rolling_mean_28.",
+      "affected_entities": [
+        "feature:rolling_mean_28",
+        "model:v1.2.0"
+      ],
+      "recommended_action": "INVESTIGATION TRIGGER ONLY \u2014 DO NOT automatically trigger retraining. First, check whether shift coincides with macro retail seasonality (e.g. Q4 holiday shopping surge). Second, validate whether realized forecast residuals degraded for these features. Only retrain if downstream forecast accuracy deteriorates concurrently.",
+      "status": "INVESTIGATING"
+    },
+    {
+      "alert_id": "ALT-PERF-WAPE-003",
+      "timestamp": "2026-10-12T21:22:25.128278+00:00",
+      "category": "forecast_performance",
+      "severity": "WARNING",
+      "what_changed": "Elevated realized error on SKU 15036 (ASSORTED COLOURS SILK FAN): WAPE reached 192.57%.",
+      "affected_entities": [
+        "15036"
+      ],
+      "recommended_action": "Inspect whether supplier lead-time buffers or intermittent sales patterns caused stockouts; consider switching to Croston or intermittent safety stock rules.",
+      "status": "ACTIVE"
+    }
+  ]
+}

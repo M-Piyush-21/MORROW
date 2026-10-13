@@ -1,0 +1,101 @@
+{
+  "problem_statement": "Reduce avoidable retail stockouts and costly excess inventory while optimally balancing service level (fill rate), inventory holding cost, and supplier ordering costs under lead-time uncertainty.",
+  "scenario_inputs": {
+    "holding_cost_annual_rate": 0.2,
+    "daily_holding_rate": 0.000548,
+    "ordering_cost_per_order": 40.0,
+    "stockout_penalty_per_unit": 5.0,
+    "lead_time_days": 4,
+    "service_factor_z": 1.65,
+    "moq": 15,
+    "batch_size": 5,
+    "is_scenario_assumption": true,
+    "disclaimer": "Cost parameters are configurable scenario inputs (assumptions) for planning and comparison, not audited historical business facts."
+  },
+  "backtest_period": {
+    "start": "2011-10-15",
+    "end": "2011-12-09",
+    "total_days": 56,
+    "sku_count": 50,
+    "total_demand_units": 226959
+  },
+  "comparison": {
+    "stockout_days_reduction_pct": 14.6,
+    "units_short_reduction_pct": 5.9,
+    "excess_inventory_reduction_pct": -320.0,
+    "holding_cost_savings_pct": -3.4,
+    "total_cost_savings_pct": -0.2,
+    "service_level_improvement_pct": 1.56
+  },
+  "policies": {
+    "morrow": {
+      "policy_name": "morrow_ml",
+      "simulated_stockout_days": 187,
+      "stockout_day_rate_pct": 6.68,
+      "units_short": 56247,
+      "excess_inventory_units": 21,
+      "average_inventory_value": 53989.5,
+      "order_frequency": 994,
+      "service_level": {
+        "fill_rate": 75.22,
+        "cycle_service_level": 93.32
+      },
+      "costs": {
+        "holding_cost": 1656.66,
+        "ordering_cost": 39760.0,
+        "stockout_penalty_cost": 281235.0,
+        "total_cost": 322651.66
+      },
+      "total_holding_cost": 1656.66,
+      "total_ordering_cost": 39760.0,
+      "total_stockout_cost": 281235.0,
+      "total_cost": 322651.66
+    },
+    "fixed_baseline": {
+      "policy_name": "fixed_baseline",
+      "simulated_stockout_days": 219,
+      "stockout_day_rate_pct": 7.82,
+      "units_short": 59788,
+      "excess_inventory_units": 5,
+      "average_inventory_value": 52193.74,
+      "order_frequency": 539,
+      "service_level": {
+        "fill_rate": 73.66,
+        "cycle_service_level": 92.18
+      },
+      "costs": {
+        "holding_cost": 1601.56,
+        "ordering_cost": 21560.0,
+        "stockout_penalty_cost": 298940.0,
+        "total_cost": 322101.56
+      },
+      "total_holding_cost": 1601.56,
+      "total_ordering_cost": 21560.0,
+      "total_stockout_cost": 298940.0,
+      "total_cost": 322101.56
+    },
+    "seasonal_baseline": {
+      "policy_name": "seasonal_baseline",
+      "simulated_stockout_days": 200,
+      "stockout_day_rate_pct": 7.14,
+      "units_short": 55831,
+      "excess_inventory_units": 9,
+      "average_inventory_value": 52626.15,
+      "order_frequency": 808,
+      "service_level": {
+        "fill_rate": 75.4,
+        "cycle_service_level": 92.86
+      },
+      "costs": {
+        "holding_cost": 1614.83,
+        "ordering_cost": 32320.0,
+        "stockout_penalty_cost": 279155.0,
+        "total_cost": 313089.83
+      },
+      "total_holding_cost": 1614.83,
+      "total_ordering_cost": 32320.0,
+      "total_stockout_cost": 279155.0,
+      "total_cost": 313089.83
+    }
+  }
+}

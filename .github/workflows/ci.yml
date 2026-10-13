@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend-test:
-    name: Backend Tests & DVC Validation
+    name: Backend Tests, MLOps Audits & Smoke Test
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -25,15 +25,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Validate DVC Pipeline Syntax
+      - name: Validate Pipeline & Parameters Syntax
         run: |
-          dvc doctor || true
-          # Validate syntax of dvc.yaml and params.yaml
-          python -c "import yaml; yaml.safe_load(open('dvc.yaml')); yaml.safe_load(open('params.yaml')); print('DVC config valid')"
+          python -c "import yaml; yaml.safe_load(open('dvc.yaml')); yaml.safe_load(open('params.yaml')); print('DVC & Params config valid')"
 
-      - name: Run Backend Pytest Suite
+      - name: Run Data Quality Audit
+        run: |
+          PYTHONPATH=. python3 backend/ml/monitoring/data_quality.py
+
+      - name: Run Feature Drift & Performance Check
+        run: |
+          PYTHONPATH=. python3 backend/ml/monitoring/drift.py
+          PYTHONPATH=. python3 backend/ml/monitoring/performance.py
+
+      - name: Run Backend Unit & API Pytest Suite
         run: |
           PYTHONPATH=. pytest backend/tests -v
+
+      - name: Run Lightweight Pipeline Smoke Test
+        run: |
+          PYTHONPATH=. python3 backend/ml/pipeline.py --smoke-test --skip-prepare
 
   frontend-build:
     name: Frontend Lint & Production Build
@@ -56,3 +67,31 @@ jobs:
 
       - name: Vite Production Build
         run: npm run build
+
+  container-build:
+    name: Container Build & Verification
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-build]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: actions/setup-buildx-action@v3
+
+      - name: Build Backend Container
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: false
+          tags: morrow-backend:ci
+
+      - name: Build Frontend Container
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.frontend
+          push: false
+          tags: morrow-frontend:ci
+

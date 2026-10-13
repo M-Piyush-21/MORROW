@@ -1,0 +1,94 @@
+{
+  "timestamp": "2026-10-13T08:03:50.233425+00:00",
+  "model_name": "RandomForestRegressor",
+  "candidate_version": "v1.2.0",
+  "decision": "APPROVED",
+  "reason": "Candidate model passed all 8 automated performance, quality, and segment guardrails.",
+  "overall_verdict": true,
+  "gates_evaluated": [
+    {
+      "gate_id": "GATE_01_OVERALL_WAPE",
+      "description": "Candidate aggregate WAPE must not exceed the operational threshold ceiling",
+      "threshold": "<= 0.90",
+      "actual_value": "0.8324",
+      "passed": true,
+      "justification": "Ensures inventory forecasting error does not create runaway replenishment deviations."
+    },
+    {
+      "gate_id": "GATE_02_BASELINE_LIFT",
+      "description": "Candidate must outperform naive seasonal Lag-7 baseline by defined minimum relative lift",
+      "threshold": ">= 5.0% relative lift",
+      "actual_value": "16.33% relative lift",
+      "passed": true,
+      "justification": "Machine learning model must convincingly justify deployment overhead over simple retail heuristics."
+    },
+    {
+      "gate_id": "GATE_03_EXPLAINED_VARIANCE",
+      "description": "Candidate R-squared must indicate meaningful signal capture over mean prediction",
+      "threshold": ">= 0.05",
+      "actual_value": "0.1568",
+      "passed": true,
+      "justification": "Protects against models that perform no better than constant horizontal projections."
+    },
+    {
+      "gate_id": "GATE_04_HIGH_VOLUME_GUARDRAIL",
+      "description": "Fast-moving revenue drivers must maintain tight WAPE guardrails",
+      "threshold": "<= 0.85",
+      "actual_value": "0.7408",
+      "passed": true,
+      "justification": "Fast movers generate over 50% of volume; excessive error here severely damages cash flow."
+    },
+    {
+      "gate_id": "GATE_05_MID_VOLUME_GUARDRAIL",
+      "description": "Mid-velocity SKUs must adhere to bounded variance guardrail",
+      "threshold": "<= 0.95",
+      "actual_value": "0.8491",
+      "passed": true,
+      "justification": "Maintains catalog consistency without permitting mid-tier margin erosion."
+    },
+    {
+      "gate_id": "GATE_06_LOW_VOLUME_GUARDRAIL",
+      "description": "Slow-moving intermittent SKUs must not exceed volatility tolerance threshold",
+      "threshold": "<= 1.40",
+      "actual_value": "1.2432",
+      "passed": true,
+      "justification": "Accounts for zero-sales days while preventing extreme over-forecasting."
+    },
+    {
+      "gate_id": "GATE_07_DATA_QUALITY_AUDIT",
+      "description": "Training and inference datasets must pass automated integrity and quality checks",
+      "threshold": "<= 0 critical issues",
+      "actual_value": "0 issues detected",
+      "passed": true,
+      "justification": "Corrupted or duplicate transactional data must never propagate into active models."
+    },
+    {
+      "gate_id": "GATE_08_INTERVAL_COVERAGE_CALIBRATION",
+      "description": "80% nominal prediction intervals must demonstrate verified empirical coverage",
+      "threshold": ">= 70.0% test coverage",
+      "actual_value": "76.7% test coverage",
+      "passed": true,
+      "justification": "Safety stock formulas rely directly on calibrated uncertainty bounds."
+    }
+  ],
+  "summary_metrics": {
+    "candidate_wape": 0.8323865032654915,
+    "baseline_wape": 0.9948889446992628,
+    "wape_lift_pct": 16.33,
+    "candidate_mae": 67.47057442665452,
+    "candidate_rmse": 186.8121220390034,
+    "candidate_r2": 0.15677829745533756,
+    "empirical_coverage_pct": 76.68
+  },
+  "mlflow_registration": {
+    "registered_model": "morrow_demand_forecasting_model",
+    "version": 15,
+    "alias": "@production",
+    "tracking_uri": "sqlite:///mlruns.db"
+  },
+  "rollback_target": {
+    "backup_path": "backend/models/archived/random_forest_demand_prev_20261013_080350.joblib",
+    "archived_at": "2026-10-13T08:03:50.209134+00:00",
+    "description": "Pre-promotion snapshot for fast single-command rollback."
+  }
+}

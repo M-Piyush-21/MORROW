@@ -1,0 +1,204 @@
+{
+  "timestamp": "2026-10-12T21:22:25.123177+00:00",
+  "model_path": "backend/models/random_forest_demand.joblib",
+  "evaluation_period": {
+    "start": "2011-10-15",
+    "end": "2011-12-09",
+    "total_test_observations": 2800
+  },
+  "overall_test_wape": 0.8321,
+  "overall_test_mae": 67.45,
+  "rolling_window_performance": [
+    {
+      "window_name": "Last 7 Days",
+      "window_days": 7,
+      "start_date": "2011-12-02",
+      "end_date": "2011-12-09",
+      "sample_count": 350,
+      "mae": 66.14,
+      "rmse": 193.88,
+      "wape": 0.887,
+      "wape_pct": 88.7,
+      "bias_direction": "OVER_FORECASTING",
+      "bias_pct": -14.0,
+      "status": "HEALTHY"
+    },
+    {
+      "window_name": "Last 14 Days",
+      "window_days": 14,
+      "start_date": "2011-11-25",
+      "end_date": "2011-12-09",
+      "sample_count": 700,
+      "mae": 66.07,
+      "rmse": 186.57,
+      "wape": 0.826,
+      "wape_pct": 82.6,
+      "bias_direction": "BALANCED",
+      "bias_pct": -4.0,
+      "status": "HEALTHY"
+    },
+    {
+      "window_name": "Last 30 Days",
+      "window_days": 30,
+      "start_date": "2011-11-09",
+      "end_date": "2011-12-09",
+      "sample_count": 1500,
+      "mae": 65.27,
+      "rmse": 160.79,
+      "wape": 0.7779,
+      "wape_pct": 77.79,
+      "bias_direction": "BALANCED",
+      "bias_pct": 4.1,
+      "status": "HEALTHY"
+    }
+  ],
+  "total_skus_monitored": 50,
+  "high_error_skus_count": 16,
+  "top_challenging_skus": [
+    {
+      "sku": "15036",
+      "description": "ASSORTED COLOURS SILK FAN",
+      "total_demand": 983,
+      "observation_days": 56,
+      "mae": 33.8,
+      "rmse": 41.21,
+      "wape": 1.9257,
+      "wape_pct": 192.57,
+      "status": "HIGH_ERROR"
+    },
+    {
+      "sku": "22151",
+      "description": "PLACE SETTING WHITE HEART",
+      "total_demand": 1395,
+      "observation_days": 56,
+      "mae": 44.28,
+      "rmse": 56.99,
+      "wape": 1.7777,
+      "wape_pct": 177.77,
+      "status": "HIGH_ERROR"
+    },
+    {
+      "sku": "84755",
+      "description": "COLOUR GLASS T-LIGHT HOLDER HANGING",
+      "total_demand": 1416,
+      "observation_days": 56,
+      "mae": 43.11,
+      "rmse": 64.51,
+      "wape": 1.705,
+      "wape_pct": 170.5,
+      "status": "HIGH_ERROR"
+    },
+    {
+      "sku": "23166",
+      "description": "MEDIUM CERAMIC TOP STORAGE JAR",
+      "total_demand": 992,
+      "observation_days": 56,
+      "mae": 29.32,
+      "rmse": 42.71,
+      "wape": 1.6553,
+      "wape_pct": 165.53,
+      "status": "HIGH_ERROR"
+    },
+    {
+      "sku": "84992",
+      "description": "72 SWEETHEART FAIRY CAKE CASES",
+      "total_demand": 1683,
+      "observation_days": 56,
+      "mae": 47.23,
+      "rmse": 69.85,
+      "wape": 1.5715,
+      "wape_pct": 157.15,
+      "status": "HIGH_ERROR"
+    },
+    {
+      "sku": "17003",
+      "description": "BROCADE RING PURSE ",
+      "total_demand": 3293,
+      "observation_days": 56,
+      "mae": 87.73,
+      "rmse": 208.92,
+      "wape": 1.4919,
+      "wape_pct": 149.19,
+      "status": "HIGH_ERROR"
+    },
+    {
+      "sku": "71459",
+      "description": "HANGING JAM JAR T-LIGHT HOLDER",
+      "total_demand": 1149,
+      "observation_days": 56,
+      "mae": 30.02,
+      "rmse": 48.35,
+      "wape": 1.4629,
+      "wape_pct": 146.29,
+      "status": "HIGH_ERROR"
+    },
+    {
+      "sku": "20668",
+      "description": "DISCO BALL CHRISTMAS DECORATION",
+      "total_demand": 7717,
+      "observation_days": 56,
+      "mae": 189.48,
+      "rmse": 246.92,
+      "wape": 1.375,
+      "wape_pct": 137.5,
+      "status": "HIGH_ERROR"
+    }
+  ],
+  "top_performing_skus": [
+    {
+      "sku": "22086",
+      "description": "PAPER CHAIN KIT 50'S CHRISTMAS ",
+      "total_demand": 11669,
+      "observation_days": 56,
+      "mae": 106.62,
+      "rmse": 194.54,
+      "wape": 0.5117,
+      "wape_pct": 51.17,
+      "status": "EXCELLENT"
+    },
+    {
+      "sku": "84946",
+      "description": "ANTIQUE SILVER T-LIGHT GLASS",
+      "total_demand": 4935,
+      "observation_days": 56,
+      "mae": 46.19,
+      "rmse": 63.57,
+      "wape": 0.5242,
+      "wape_pct": 52.42,
+      "status": "EXCELLENT"
+    },
+    {
+      "sku": "20724",
+      "description": "RED RETROSPOT CHARLOTTE BAG",
+      "total_demand": 4004,
+      "observation_days": 56,
+      "mae": 39.86,
+      "rmse": 54.33,
+      "wape": 0.5575,
+      "wape_pct": 55.75,
+      "status": "EXCELLENT"
+    },
+    {
+      "sku": "22993",
+      "description": "SET OF 4 PANTRY JELLY MOULDS",
+      "total_demand": 2994,
+      "observation_days": 56,
+      "mae": 32.01,
+      "rmse": 47.81,
+      "wape": 0.5988,
+      "wape_pct": 59.88,
+      "status": "EXCELLENT"
+    },
+    {
+      "sku": "22423",
+      "description": "REGENCY CAKESTAND 3 TIER",
+      "total_demand": 1978,
+      "observation_days": 56,
+      "mae": 21.92,
+      "rmse": 29.95,
+      "wape": 0.6205,
+      "wape_pct": 62.05,
+      "status": "EXCELLENT"
+    }
+  ]
+}

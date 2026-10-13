@@ -29,3 +29,80 @@ evaluate:
   metrics_output: "backend/reports/metrics/evaluation_metrics.json"
   comparison_output: "backend/reports/metrics/model_comparison.json"
   figures_dir: "backend/reports/figures"
+
+simulation:
+  holding_cost_annual_rate: 0.20
+  ordering_cost_per_order: 40.0
+  stockout_penalty_per_unit: 5.0
+  lead_time_days: 4
+  service_factor_z: 1.65
+  moq: 15
+  batch_size: 5
+  output_path: "backend/reports/metrics/inventory_simulation.json"
+
+promotion:
+  # Primary metric: WAPE is scale-free and stable across intermittent and regular retail items.
+  primary_metric: "wape"
+  # Target ceiling: Model must stay below 90% aggregate WAPE to be operationally viable.
+  max_overall_wape: 0.90
+  # Minimum lift: Candidate must beat naive baseline by at least 5% relative improvement.
+  min_wape_improvement_pct: 5.0
+  # Explained variance: Must explain non-trivial demand variance (baseline is negative -0.405).
+  min_r2: 0.05
+  # Guardrails per volume segment to prevent aggregate masking:
+  segment_guardrails:
+    # Fast movers represent the bulk of revenue; require tight error bound.
+    high_volume_max_wape: 0.85
+    # Medium velocity items: moderate variability tolerance.
+    mid_volume_max_wape: 0.95
+    # Slow movers: intermittent zero-demand days increase relative variance; allow up to 1.40 WAPE.
+    low_volume_max_wape: 1.40
+  # Data quality gate: zero critical schema/integrity violations allowed for candidate promotion.
+  max_critical_data_quality_issues: 0
+  # Reliability gate: 80% nominal interval must cover at least 70% of test observations.
+  min_prediction_interval_coverage_pct: 70.0
+  output_path: "backend/reports/metrics/promotion_decision.json"
+
+monitoring:
+  data_quality:
+    max_missing_date_ratio: 0.01
+    max_duplicate_ratio: 0.00
+    quantity_min: 0
+    # Flag single-day sales exceeding 5x Interquartile Range as unusual volume spikes.
+    spike_iqr_multiplier: 5.0
+    output_path: "backend/reports/metrics/monitoring_data_quality.json"
+  drift:
+    method: "psi"
+    features_to_monitor:
+      - "lag_1"
+      - "lag_7"
+      - "rolling_mean_7"
+      - "rolling_mean_28"
+      - "unit_price"
+    num_bins: 10
+    # Thresholds established on baseline validation distribution:
+    # PSI < 0.10: Stable distribution
+    # 0.10 <= PSI < 0.25: Moderate shift (Warning)
+    # PSI >= 0.25: Significant distribution shift (Trigger investigation)
+    psi_stable_threshold: 0.10
+    psi_warning_threshold: 0.25
+    limitations_note: >
+      PSI evaluates marginal distribution shifts relative to training/validation baselines.
+      It does not capture multidimensional interactions, and high PSI does not automatically
+      imply forecast degradation if the shift aligns with known promotional or seasonal calendars.
+      Drift serves as an investigation trigger rather than an automatic retraining command.
+    output_path: "backend/reports/metrics/monitoring_drift.json"
+  performance:
+    evaluation_windows_days: [7, 14, 30]
+    wape_alert_threshold: 1.05
+    output_path: "backend/reports/metrics/monitoring_performance.json"
+  service:
+    latency_p95_threshold_ms: 250.0
+    error_rate_threshold_pct: 2.0
+    output_path: "backend/reports/metrics/monitoring_service.json"
+  alerts:
+    output_path: "backend/reports/metrics/active_alerts.json"
+  feedback:
+    log_path: "backend/data/feedback/forecast_feedback.jsonl"
+
+

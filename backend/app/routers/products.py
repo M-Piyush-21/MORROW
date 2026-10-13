@@ -23,9 +23,17 @@ def list_products(
 
 @router.get("/products/{product_id}", response_model=Product)
 def get_product(product_id: str):
-    product = product_service.get_by_id(product_id)
+    product = product_service.get_by_id(product_id) or product_service.get_by_sku(product_id)
     if not product:
-        raise HTTPException(status_code=404, detail=f"Product with ID '{product_id}' not found.")
+        sample_skus = [p.sku for p in product_service.get_all()[:5]]
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "SKU_NOT_FOUND",
+                "message": f"Product with ID or SKU '{product_id}' was not found in catalog.",
+                "details": {"requested_id": product_id, "sample_available_skus": sample_skus},
+            },
+        )
     return product
 
 
@@ -41,14 +49,15 @@ def list_suppliers():
 
 @router.get("/sales/{product_id}", response_model=List[DailySales])
 def get_product_sales(product_id: str, days: int = Query(90, ge=7, le=365)):
+    p = product_service.get_by_id(product_id) or product_service.get_by_sku(product_id)
+    if not p:
+        raise HTTPException(status_code=404, detail=f"Product '{product_id}' not found.")
+
     predictor = get_predictor()
-    df = predictor.get_sku_history(product_id, days=days)
+    df = predictor.get_sku_history(p.sku, days=days)
     if df.empty:
-        # Check if product exists in catalog
-        p = product_service.get_by_id(product_id)
-        if not p:
-            raise HTTPException(status_code=404, detail=f"Product '{product_id}' not found.")
         return []
+
 
     return [
         DailySales(

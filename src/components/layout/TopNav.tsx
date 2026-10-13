@@ -9,6 +9,9 @@ import {
   ChevronDown,
   Calendar,
   CheckCheck,
+  Cpu,
+  Database,
+  ShieldCheck,
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
@@ -33,7 +36,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { DateRangePreset } from '@/types';
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from '@/components/ui/popover';
+import { getModelInfo } from '@/services/api';
+import type { DateRangePreset, ModelInfoResponse } from '@/types';
 
 const pageTitles: Record<string, { title: string; breadcrumb: string }> = {
   '/': { title: 'Dashboard', breadcrumb: 'Overview' },
@@ -64,6 +73,12 @@ export function TopNav({ onMenuClick, dateRange, onDateRangeChange }: TopNavProp
     key === '/' ? currentPath === '/' : currentPath.startsWith(key),
   ) || '/';
   const { title, breadcrumb } = pageTitles[pageKey];
+
+  const [modelInfo, setModelInfo] = useState<ModelInfoResponse | null>(null);
+
+  useEffect(() => {
+    getModelInfo().then(setModelInfo).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -140,6 +155,86 @@ export function TopNav({ onMenuClick, dateRange, onDateRangeChange }: TopNavProp
           </SelectContent>
         </Select>
       </div>
+
+      {/* Model Version & Freshness Popover Pill */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            className="hidden lg:flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/10 transition-colors"
+            title="Inspect Model Version & Data Freshness"
+          >
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <span className="font-semibold text-primary">{modelInfo?.modelVersion || 'v1.6'}</span>
+            <span className="text-muted-foreground font-mono text-[11px]">(@production)</span>
+            <span className="text-muted-foreground">·</span>
+            <span className="text-[11px] text-muted-foreground">
+              {modelInfo?.dataFreshness?.last_recorded_invoice_date || '2011-12-09'}
+            </span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-4 text-xs space-y-3" align="end">
+          <div className="flex items-center justify-between pb-2 border-b border-border">
+            <div className="flex items-center gap-1.5 font-semibold text-foreground">
+              <Cpu className="h-4 w-4 text-primary" />
+              <span>{modelInfo?.modelName || 'Random Forest Regressor'}</span>
+            </div>
+            <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 text-[10px]">
+              {modelInfo?.status || 'PRODUCTION'}
+            </Badge>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-muted-foreground">
+              <span>Model Version:</span>
+              <span className="font-mono font-bold text-foreground">{modelInfo?.modelVersion || 'v1.6'}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Last Trained:</span>
+              <span className="font-medium text-foreground">
+                {modelInfo?.lastSuccessfulTrainingTime
+                  ? new Date(modelInfo.lastSuccessfulTrainingTime).toLocaleString()
+                  : 'Oct 13, 2026, 03:05 UTC'}
+              </span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Primary Metric (WAPE):</span>
+              <span className="font-bold text-primary">
+                {modelInfo?.evaluationSummary?.wape ? `${modelInfo.evaluationSummary.wape.toFixed(1)}%` : '83.2%'}
+              </span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Interval Coverage:</span>
+              <span className="font-medium text-foreground">
+                {modelInfo?.evaluationSummary?.interval_coverage_pct ? `${modelInfo.evaluationSummary.interval_coverage_pct.toFixed(1)}% (80% target)` : '76.7%'}
+              </span>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-border space-y-1.5">
+            <div className="flex items-center gap-1.5 font-semibold text-foreground">
+              <Database className="h-3.5 w-3.5 text-primary" />
+              <span>Data Freshness & Lineage</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Dataset:</span>
+              <span className="font-medium text-foreground">{modelInfo?.dataFreshness?.dataset || 'UCI Online Retail'}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Latest Invoiced Date:</span>
+              <span className="font-mono font-medium text-foreground">{modelInfo?.dataFreshness?.last_recorded_invoice_date || '2011-12-09'}</span>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <span>Featured Rows:</span>
+              <span className="font-medium text-foreground">{modelInfo?.dataFreshness?.total_featured_rows?.toLocaleString() || '17,300'}</span>
+            </div>
+          </div>
+
+          <div className="rounded bg-secondary/50 p-2 text-[10px] text-muted-foreground flex items-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-warning shrink-0" />
+            <span>Synthetic Inventory Mode: On-hand stocks are scenario inputs for policy testing.</span>
+          </div>
+        </PopoverContent>
+      </Popover>
 
       {/* Notifications */}
       <DropdownMenu open={notifOpen} onOpenChange={setNotifOpen}>

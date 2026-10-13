@@ -10,10 +10,10 @@
   },
   {
     "modelName": "Random Forest Regressor (Morrow)",
-    "mae": 67.45,
-    "rmse": 186.58,
-    "mape": 358.7,
-    "r2Score": 0.159,
+    "mae": 67.47,
+    "rmse": 186.81,
+    "mape": 357.8,
+    "r2Score": 0.157,
     "trainingTime": 1.05,
     "status": "production"
   }

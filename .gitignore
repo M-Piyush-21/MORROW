@@ -32,15 +32,22 @@ __pycache__/
 *$py.class
 *.so
 
+# TypeScript build cache
+*.tsbuildinfo
+
 # Data and Models
 backend/data/raw/*.xlsx
 backend/data/raw/*.csv
 *.xlsx
 backend/models/*.pkl
 backend/models/*.joblib
+backend/models/archived/*.joblib
+backend/models/quarantined/*.joblib
 !backend/models/random_forest_demand.joblib
+backend/data/feedback/*.jsonl
 mlruns/
 mlruns.db
 .pytest_cache/
 .dvc/cache/
 .dvc/tmp/
+

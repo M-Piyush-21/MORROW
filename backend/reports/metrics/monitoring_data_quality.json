@@ -1,0 +1,100 @@
+{
+  "timestamp": "2026-10-12T21:22:25.029425+00:00",
+  "status": "WARNING",
+  "total_records_audited": 18700,
+  "modeled_sku_count": 50,
+  "date_range": {
+    "start": "2010-12-01",
+    "end": "2011-12-09",
+    "expected_calendar_days": 374
+  },
+  "integrity_metrics": {
+    "duplicate_records": 0,
+    "missing_calendar_dates": 0,
+    "negative_quantities": 0,
+    "null_quantities": 0,
+    "invalid_unit_prices": 0,
+    "skus_with_gap_days_count": 0
+  },
+  "spike_detection": {
+    "threshold_iqr_multiplier": 5.0,
+    "total_spikes_detected": 531,
+    "sample_spikes": [
+      {
+        "sku": "15036",
+        "date": "2011-01-31",
+        "quantity": 649,
+        "spike_threshold": 216.0,
+        "multiplier_over_median": 54.1
+      },
+      {
+        "sku": "15036",
+        "date": "2011-02-04",
+        "quantity": 1212,
+        "spike_threshold": 216.0,
+        "multiplier_over_median": 101.0
+      },
+      {
+        "sku": "15036",
+        "date": "2011-02-16",
+        "quantity": 637,
+        "spike_threshold": 216.0,
+        "multiplier_over_median": 53.1
+      },
+      {
+        "sku": "15036",
+        "date": "2011-03-10",
+        "quantity": 224,
+        "spike_threshold": 216.0,
+        "multiplier_over_median": 18.7
+      },
+      {
+        "sku": "15036",
+        "date": "2011-03-17",
+        "quantity": 634,
+        "spike_threshold": 216.0,
+        "multiplier_over_median": 52.8
+      },
+      {
+        "sku": "15036",
+        "date": "2011-03-18",
+        "quantity": 612,
+        "spike_threshold": 216.0,
+        "multiplier_over_median": 51.0
+      },
+      {
+        "sku": "15036",
+        "date": "2011-03-30",
+        "quantity": 1212,
+        "spike_threshold": 216.0,
+        "multiplier_over_median": 101.0
+      },
+      {
+        "sku": "15036",
+        "date": "2011-04-13",
+        "quantity": 684,
+        "spike_threshold": 216.0,
+        "multiplier_over_median": 57.0
+      },
+      {
+        "sku": "15036",
+        "date": "2011-04-26",
+        "quantity": 615,
+        "spike_threshold": 216.0,
+        "multiplier_over_median": 51.2
+      },
+      {
+        "sku": "15036",
+        "date": "2011-05-03",
+        "quantity": 221,
+        "spike_threshold": 216.0,
+        "multiplier_over_median": 18.4
+      }
+    ]
+  },
+  "critical_issues_count": 0,
+  "critical_issues": [],
+  "warning_issues": [
+    "Detected 531 unusual volume spikes (> 5.0x IQR)."
+  ]
+}

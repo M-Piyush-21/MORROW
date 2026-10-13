@@ -1,20 +1,30 @@
 {
-  "dataset": "UCI Online Retail",
-  "test_period": {
-    "start": "2011-10-15",
-    "end": "2011-12-09",
-    "samples": 2800,
-    "unique_skus": 50
+  "problem_statement": "Reduce avoidable stockouts and excess stock while balancing service level, inventory holding cost, and ordering cost.",
+  "run_metadata": {
+    "evaluation_date_range": {
+      "start": "2011-10-15",
+      "end": "2011-12-09"
+    },
+    "sku_coverage": {
+      "total_skus": 50,
+      "regular_skus": 41,
+      "intermittent_skus": 9
+    },
+    "data_version": "dvc://backend/data/raw/Online Retail.xlsx.dvc@rev3",
+    "feature_version": "features-v2-leak-free-lags-rolling",
+    "model_version": "v1.2.0",
+    "random_seed": 42,
+    "run_timestamp": "2026-10-13T03:05:03.265808"
   },
+  "dataset": "UCI Online Retail",
   "zero_demand_day_percentage": 21.0,
-  "metrics_strategy_note": "MAPE is computed strictly on non-zero demand days to avoid division by zero. WAPE is computed as sum(|y - y_hat|) / sum(y).",
   "models": {
     "random_forest": {
-      "mae": 67.44619425836834,
-      "rmse": 186.58090425539444,
-      "r2": 0.15886432051370747,
-      "wape": 0.8320857243970555,
-      "nonzero_mape": 358.6946451459873
+      "mae": 67.47057442665452,
+      "rmse": 186.8121220390034,
+      "r2": 0.15677829745533756,
+      "wape": 0.8323865032654915,
+      "nonzero_mape": 357.7988989625104
     },
     "naive_baseline": {
       "mae": 80.6425,
@@ -24,96 +34,732 @@
       "nonzero_mape": 312.88114615023164
     }
   },
+  "prediction_interval_calibration": {
+    "nominal_coverage_pct": 80.0,
+    "empirical_coverage_pct": 76.68,
+    "mean_interval_width": 109.98,
+    "calibration_source": "Validation split (2011-09-01 to 2011-10-15) residual empirical quantiles [10%, 90%]",
+    "residual_lower_q10": -73.12,
+    "residual_upper_q90": 59.42,
+    "status": "calibrated_and_tested"
+  },
+  "metric_explanations": {
+    "mae": {
+      "name": "Mean Absolute Error (MAE)",
+      "unit": "Units per Day",
+      "retail_meaning": "Average units the forecast misses each day per SKU. For example, an MAE of 12 units means your daily restock plan will, on average, deviate from customer orders by 12 units."
+    },
+    "rmse": {
+      "name": "Root Mean Squared Error (RMSE)",
+      "unit": "Units per Day",
+      "retail_meaning": "Penalizes large outlier misses much more heavily than MAE. Essential for identifying sudden demand surges (promotions, viral spikes) that risk rapid stockouts."
+    },
+    "wape": {
+      "name": "Weighted Absolute Percentage Error (WAPE)",
+      "unit": "Percentage (%)",
+      "retail_meaning": "Total absolute forecast errors divided by total catalog demand volume. Unlike MAPE, WAPE does not explode or divide by zero on slow-moving or quiet sales days."
+    },
+    "seasonal_baseline": {
+      "name": "Naive Seasonal Baseline (Lag-7)",
+      "unit": "Benchmark Comparison",
+      "retail_meaning": "Compares MORROW's AI model to the standard retail rule of thumb (repeating the same day from last week). Quantifies the exact operational lift MORROW delivers over simple manual heuristics."
+    },
+    "prediction_intervals": {
+      "name": "Calibrated Prediction Interval Coverage",
+      "unit": "Percentage (%)",
+      "retail_meaning": "The percentage of actual future sales days that fell within MORROW's upper and lower forecast safety bounds. Calibrated empirically so operations teams can trust safety stock buffers."
+    }
+  },
+  "volume_segments": {
+    "High-Volume (Fast Movers)": {
+      "sku_count": 10,
+      "total_demand": 117528,
+      "mae": 155.47,
+      "rmse": 380.83,
+      "wape": 0.7408
+    },
+    "Mid-Volume (Medium Velocity)": {
+      "sku_count": 25,
+      "total_demand": 86744,
+      "mae": 52.61,
+      "rmse": 101.77,
+      "wape": 0.8491
+    },
+    "Low-Volume (Slow Movers)": {
+      "sku_count": 15,
+      "total_demand": 22687,
+      "mae": 33.58,
+      "rmse": 48.8,
+      "wape": 1.2432
+    }
+  },
+  "intermittent_vs_regular": {
+    "intermittent_segment": {
+      "sku_count": 9,
+      "samples": 504,
+      "zero_demand_day_pct": 36.1,
+      "mae": 56.49,
+      "rmse": 148.41,
+      "wape": 1.2418,
+      "mape_note": "MAPE is excluded for intermittent series due to division by zero on zero-sales days. WAPE is the primary volume-weighted metric."
+    },
+    "regular_segment": {
+      "sku_count": 41,
+      "samples": 2296,
+      "zero_demand_day_pct": 17.7,
+      "mae": 69.88,
+      "rmse": 194.23,
+      "wape": 0.7864,
+      "nonzero_mape": 335.8
+    }
+  },
+  "horizon_evaluation": {
+    "7_days": {
+      "horizon_days": 7,
+      "skus_evaluated": 50,
+      "rf_model": {
+        "mae": 184.92,
+        "rmse": 265.98,
+        "wape": 0.4332
+      },
+      "naive_baseline": {
+        "mae": 221.88,
+        "rmse": 341.13,
+        "wape": 0.5198
+      },
+      "wape_improvement_pct": 16.7
+    },
+    "14_days": {
+      "horizon_days": 14,
+      "skus_evaluated": 50,
+      "rf_model": {
+        "mae": 481.39,
+        "rmse": 967.66,
+        "wape": 0.4668
+      },
+      "naive_baseline": {
+        "mae": 417.84,
+        "rmse": 1060.25,
+        "wape": 0.4052
+      },
+      "wape_improvement_pct": -15.2
+    },
+    "30_days": {
+      "horizon_days": 30,
+      "skus_evaluated": 50,
+      "rf_model": {
+        "mae": 940.98,
+        "rmse": 1675.98,
+        "wape": 0.4122
+      },
+      "naive_baseline": {
+        "mae": 427.36,
+        "rmse": 742.66,
+        "wape": 0.1872
+      },
+      "wape_improvement_pct": -120.2
+    }
+  },
   "per_sku_summary": {
     "15036": {
       "description": "ASSORTED COLOURS SILK FAN",
       "samples": 56,
       "total_actual": 983,
-      "total_predicted": 2737,
-      "mae": 33.8,
-      "rmse": 41.21,
-      "wape": 1.926
+      "total_predicted": 2763,
+      "mae": 34.33,
+      "rmse": 42.0,
+      "wape": 1.956,
+      "zero_demand_percentage": 35.7,
+      "demand_pattern": "Intermittent",
+      "volume_tier": "Low-Volume (Slow Movers)"
     },
     "17003": {
       "description": "BROCADE RING PURSE ",
       "samples": 56,
       "total_actual": 3293,
-      "total_predicted": 5120,
-      "mae": 87.73,
-      "rmse": 208.92,
-      "wape": 1.492
+      "total_predicted": 5047,
+      "mae": 86.75,
+      "rmse": 208.77,
+      "wape": 1.475,
+      "zero_demand_percentage": 44.6,
+      "demand_pattern": "Intermittent",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
     },
     "20668": {
       "description": "DISCO BALL CHRISTMAS DECORATION",
       "samples": 56,
       "total_actual": 7717,
-      "total_predicted": 15479,
-      "mae": 189.48,
-      "rmse": 246.92,
-      "wape": 1.375
+      "total_predicted": 16053,
+      "mae": 198.65,
+      "rmse": 256.93,
+      "wape": 1.442,
+      "zero_demand_percentage": 21.4,
+      "demand_pattern": "Regular",
+      "volume_tier": "High-Volume (Fast Movers)"
     },
     "20719": {
       "description": "WOODLAND CHARLOTTE BAG",
       "samples": 56,
       "total_actual": 2138,
-      "total_predicted": 2713,
-      "mae": 26.49,
-      "rmse": 34.26,
-      "wape": 0.694
+      "total_predicted": 2697,
+      "mae": 26.74,
+      "rmse": 34.08,
+      "wape": 0.7,
+      "zero_demand_percentage": 17.9,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
     },
     "20724": {
       "description": "RED RETROSPOT CHARLOTTE BAG",
       "samples": 56,
       "total_actual": 4004,
-      "total_predicted": 3820,
-      "mae": 39.86,
-      "rmse": 54.33,
-      "wape": 0.558
+      "total_predicted": 3854,
+      "mae": 39.26,
+      "rmse": 53.48,
+      "wape": 0.549,
+      "zero_demand_percentage": 16.1,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
     },
     "20725": {
       "description": "LUNCH BAG RED RETROSPOT",
       "samples": 56,
       "total_actual": 2995,
-      "total_predicted": 4391,
-      "mae": 48.81,
-      "rmse": 65.68,
-      "wape": 0.913
+      "total_predicted": 4359,
+      "mae": 48.69,
+      "rmse": 65.49,
+      "wape": 0.91,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
     },
     "21080": {
       "description": "SET/20 RED RETROSPOT PAPER NAPKINS ",
       "samples": 56,
       "total_actual": 1696,
-      "total_predicted": 2529,
-      "mae": 30.32,
-      "rmse": 41.93,
-      "wape": 1.001
+      "total_predicted": 2530,
+      "mae": 29.99,
+      "rmse": 41.84,
+      "wape": 0.99,
+      "zero_demand_percentage": 19.6,
+      "demand_pattern": "Regular",
+      "volume_tier": "Low-Volume (Slow Movers)"
     },
     "21212": {
       "description": "PACK OF 72 RETROSPOT CAKE CASES",
       "samples": 56,
       "total_actual": 4192,
-      "total_predicted": 5118,
-      "mae": 52.42,
-      "rmse": 80.91,
-      "wape": 0.7
+      "total_predicted": 5137,
+      "mae": 51.25,
+      "rmse": 80.71,
+      "wape": 0.685,
+      "zero_demand_percentage": 16.1,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
     },
     "21213": {
       "description": "PACK OF 72 SKULL CAKE CASES",
       "samples": 56,
       "total_actual": 1778,
-      "total_predicted": 3140,
-      "mae": 36.7,
-      "rmse": 52.38,
-      "wape": 1.156
+      "total_predicted": 3130,
+      "mae": 36.19,
+      "rmse": 51.03,
+      "wape": 1.14,
+      "zero_demand_percentage": 19.6,
+      "demand_pattern": "Regular",
+      "volume_tier": "Low-Volume (Slow Movers)"
     },
     "21731": {
       "description": "RED TOADSTOOL LED NIGHT LIGHT",
       "samples": 56,
       "total_actual": 3020,
-      "total_predicted": 3332,
-      "mae": 41.04,
-      "rmse": 62.37,
-      "wape": 0.761
+      "total_predicted": 3342,
+      "mae": 41.05,
+      "rmse": 62.44,
+      "wape": 0.761,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "21790": {
+      "description": "VINTAGE SNAP CARDS",
+      "samples": 56,
+      "total_actual": 4172,
+      "total_predicted": 4028,
+      "mae": 53.13,
+      "rmse": 82.24,
+      "wape": 0.713,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "21915": {
+      "description": "RED  HARMONICA IN BOX ",
+      "samples": 56,
+      "total_actual": 6000,
+      "total_predicted": 4413,
+      "mae": 117.92,
+      "rmse": 321.13,
+      "wape": 1.101,
+      "zero_demand_percentage": 39.3,
+      "demand_pattern": "Intermittent",
+      "volume_tier": "High-Volume (Fast Movers)"
+    },
+    "21931": {
+      "description": "JUMBO STORAGE BAG SUKI",
+      "samples": 56,
+      "total_actual": 2102,
+      "total_predicted": 2441,
+      "mae": 31.82,
+      "rmse": 49.11,
+      "wape": 0.848,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "21977": {
+      "description": "PACK OF 60 PINK PAISLEY CAKE CASES",
+      "samples": 56,
+      "total_actual": 1950,
+      "total_predicted": 2857,
+      "mae": 35.32,
+      "rmse": 48.98,
+      "wape": 1.014,
+      "zero_demand_percentage": 17.9,
+      "demand_pattern": "Regular",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "22086": {
+      "description": "PAPER CHAIN KIT 50'S CHRISTMAS ",
+      "samples": 56,
+      "total_actual": 11669,
+      "total_predicted": 7281,
+      "mae": 104.69,
+      "rmse": 195.04,
+      "wape": 0.502,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "High-Volume (Fast Movers)"
+    },
+    "22151": {
+      "description": "PLACE SETTING WHITE HEART",
+      "samples": 56,
+      "total_actual": 1395,
+      "total_predicted": 3714,
+      "mae": 45.0,
+      "rmse": 58.0,
+      "wape": 1.807,
+      "zero_demand_percentage": 35.7,
+      "demand_pattern": "Intermittent",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "22178": {
+      "description": "VICTORIAN GLASS HANGING T-LIGHT",
+      "samples": 56,
+      "total_actual": 4330,
+      "total_predicted": 4167,
+      "mae": 70.37,
+      "rmse": 141.38,
+      "wape": 0.91,
+      "zero_demand_percentage": 17.9,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "22197": {
+      "description": "POPCORN HOLDER",
+      "samples": 56,
+      "total_actual": 22820,
+      "total_predicted": 8702,
+      "mae": 292.49,
+      "rmse": 619.24,
+      "wape": 0.718,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "High-Volume (Fast Movers)"
+    },
+    "22355": {
+      "description": "CHARLOTTE BAG SUKI DESIGN",
+      "samples": 56,
+      "total_actual": 4135,
+      "total_predicted": 3345,
+      "mae": 48.51,
+      "rmse": 68.02,
+      "wape": 0.657,
+      "zero_demand_percentage": 16.1,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "22383": {
+      "description": "LUNCH BAG SUKI DESIGN ",
+      "samples": 56,
+      "total_actual": 1448,
+      "total_predicted": 2429,
+      "mae": 26.3,
+      "rmse": 35.65,
+      "wape": 1.017,
+      "zero_demand_percentage": 19.6,
+      "demand_pattern": "Regular",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "22386": {
+      "description": "JUMBO BAG PINK POLKADOT",
+      "samples": 56,
+      "total_actual": 3217,
+      "total_predicted": 4255,
+      "mae": 73.21,
+      "rmse": 112.96,
+      "wape": 1.274,
+      "zero_demand_percentage": 21.4,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "22411": {
+      "description": "JUMBO SHOPPER VINTAGE RED PAISLEY",
+      "samples": 56,
+      "total_actual": 2252,
+      "total_predicted": 2346,
+      "mae": 30.54,
+      "rmse": 51.28,
+      "wape": 0.76,
+      "zero_demand_percentage": 16.1,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "22423": {
+      "description": "REGENCY CAKESTAND 3 TIER",
+      "samples": 56,
+      "total_actual": 1978,
+      "total_predicted": 2297,
+      "mae": 22.33,
+      "rmse": 30.52,
+      "wape": 0.632,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "22469": {
+      "description": "HEART OF WICKER SMALL",
+      "samples": 56,
+      "total_actual": 3575,
+      "total_predicted": 3834,
+      "mae": 62.51,
+      "rmse": 128.29,
+      "wape": 0.979,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "22492": {
+      "description": "MINI PAINT SET VINTAGE ",
+      "samples": 56,
+      "total_actual": 5678,
+      "total_predicted": 4406,
+      "mae": 88.32,
+      "rmse": 189.88,
+      "wape": 0.871,
+      "zero_demand_percentage": 30.4,
+      "demand_pattern": "Intermittent",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "22616": {
+      "description": "PACK OF 12 LONDON TISSUES ",
+      "samples": 56,
+      "total_actual": 4577,
+      "total_predicted": 4568,
+      "mae": 99.46,
+      "rmse": 172.57,
+      "wape": 1.217,
+      "zero_demand_percentage": 23.2,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "22629": {
+      "description": "SPACEBOY LUNCH BOX ",
+      "samples": 56,
+      "total_actual": 2447,
+      "total_predicted": 2612,
+      "mae": 36.36,
+      "rmse": 54.61,
+      "wape": 0.832,
+      "zero_demand_percentage": 17.9,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "22693": {
+      "description": "GROW A FLYTRAP OR SUNFLOWER IN TIN",
+      "samples": 56,
+      "total_actual": 2021,
+      "total_predicted": 2440,
+      "mae": 33.73,
+      "rmse": 46.48,
+      "wape": 0.935,
+      "zero_demand_percentage": 32.1,
+      "demand_pattern": "Intermittent",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "22952": {
+      "description": "60 CAKE CASES VINTAGE CHRISTMAS",
+      "samples": 56,
+      "total_actual": 7947,
+      "total_predicted": 6078,
+      "mae": 93.79,
+      "rmse": 147.94,
+      "wape": 0.661,
+      "zero_demand_percentage": 16.1,
+      "demand_pattern": "Regular",
+      "volume_tier": "High-Volume (Fast Movers)"
+    },
+    "22961": {
+      "description": "JAM MAKING SET PRINTED",
+      "samples": 56,
+      "total_actual": 3223,
+      "total_predicted": 3184,
+      "mae": 43.87,
+      "rmse": 93.24,
+      "wape": 0.762,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "22969": {
+      "description": "HOMEMADE JAM SCENTED CANDLES",
+      "samples": 56,
+      "total_actual": 1121,
+      "total_predicted": 1832,
+      "mae": 25.36,
+      "rmse": 33.31,
+      "wape": 1.267,
+      "zero_demand_percentage": 26.8,
+      "demand_pattern": "Regular",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "22993": {
+      "description": "SET OF 4 PANTRY JELLY MOULDS",
+      "samples": 56,
+      "total_actual": 2994,
+      "total_predicted": 3026,
+      "mae": 32.75,
+      "rmse": 48.53,
+      "wape": 0.612,
+      "zero_demand_percentage": 16.1,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "23084": {
+      "description": "RABBIT NIGHT LIGHT",
+      "samples": 56,
+      "total_actual": 25164,
+      "total_predicted": 10270,
+      "mae": 300.26,
+      "rmse": 616.06,
+      "wape": 0.668,
+      "zero_demand_percentage": 28.6,
+      "demand_pattern": "Regular",
+      "volume_tier": "High-Volume (Fast Movers)"
+    },
+    "23166": {
+      "description": "MEDIUM CERAMIC TOP STORAGE JAR",
+      "samples": 56,
+      "total_actual": 992,
+      "total_predicted": 1992,
+      "mae": 28.47,
+      "rmse": 40.53,
+      "wape": 1.607,
+      "zero_demand_percentage": 32.1,
+      "demand_pattern": "Intermittent",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "23199": {
+      "description": "JUMBO BAG APPLES",
+      "samples": 56,
+      "total_actual": 2669,
+      "total_predicted": 2996,
+      "mae": 46.95,
+      "rmse": 83.85,
+      "wape": 0.985,
+      "zero_demand_percentage": 16.1,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "23201": {
+      "description": "JUMBO BAG ALPHABET",
+      "samples": 56,
+      "total_actual": 3392,
+      "total_predicted": 3497,
+      "mae": 59.65,
+      "rmse": 95.38,
+      "wape": 0.985,
+      "zero_demand_percentage": 16.1,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "23203": {
+      "description": "JUMBO BAG VINTAGE DOILY ",
+      "samples": 56,
+      "total_actual": 5489,
+      "total_predicted": 4904,
+      "mae": 70.69,
+      "rmse": 140.76,
+      "wape": 0.721,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "23209": {
+      "description": "LUNCH BAG VINTAGE DOILY ",
+      "samples": 56,
+      "total_actual": 2710,
+      "total_predicted": 3203,
+      "mae": 34.1,
+      "rmse": 45.41,
+      "wape": 0.705,
+      "zero_demand_percentage": 16.1,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "47566": {
+      "description": "PARTY BUNTING",
+      "samples": 56,
+      "total_actual": 1387,
+      "total_predicted": 1916,
+      "mae": 26.39,
+      "rmse": 46.96,
+      "wape": 1.066,
+      "zero_demand_percentage": 16.1,
+      "demand_pattern": "Regular",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "71459": {
+      "description": "HANGING JAM JAR T-LIGHT HOLDER",
+      "samples": 56,
+      "total_actual": 1149,
+      "total_predicted": 2165,
+      "mae": 30.56,
+      "rmse": 48.99,
+      "wape": 1.489,
+      "zero_demand_percentage": 39.3,
+      "demand_pattern": "Intermittent",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "84077": {
+      "description": "WORLD WAR 2 GLIDERS ASSTD DESIGNS",
+      "samples": 56,
+      "total_actual": 12435,
+      "total_predicted": 9308,
+      "mae": 169.32,
+      "rmse": 593.69,
+      "wape": 0.763,
+      "zero_demand_percentage": 21.4,
+      "demand_pattern": "Regular",
+      "volume_tier": "High-Volume (Fast Movers)"
+    },
+    "84755": {
+      "description": "COLOUR GLASS T-LIGHT HOLDER HANGING",
+      "samples": 56,
+      "total_actual": 1416,
+      "total_predicted": 3001,
+      "mae": 43.31,
+      "rmse": 64.26,
+      "wape": 1.713,
+      "zero_demand_percentage": 35.7,
+      "demand_pattern": "Intermittent",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "84879": {
+      "description": "ASSORTED COLOUR BIRD ORNAMENT",
+      "samples": 56,
+      "total_actual": 8328,
+      "total_predicted": 5537,
+      "mae": 94.98,
+      "rmse": 195.12,
+      "wape": 0.639,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "High-Volume (Fast Movers)"
+    },
+    "84946": {
+      "description": "ANTIQUE SILVER T-LIGHT GLASS",
+      "samples": 56,
+      "total_actual": 4935,
+      "total_predicted": 4766,
+      "mae": 46.43,
+      "rmse": 63.84,
+      "wape": 0.527,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "84991": {
+      "description": "60 TEATIME FAIRY CAKE CASES",
+      "samples": 56,
+      "total_actual": 2753,
+      "total_predicted": 3452,
+      "mae": 53.2,
+      "rmse": 76.93,
+      "wape": 1.082,
+      "zero_demand_percentage": 26.8,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "84992": {
+      "description": "72 SWEETHEART FAIRY CAKE CASES",
+      "samples": 56,
+      "total_actual": 1683,
+      "total_predicted": 3370,
+      "mae": 45.88,
+      "rmse": 66.96,
+      "wape": 1.527,
+      "zero_demand_percentage": 26.8,
+      "demand_pattern": "Regular",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "85099B": {
+      "description": "JUMBO BAG RED RETROSPOT",
+      "samples": 56,
+      "total_actual": 8781,
+      "total_predicted": 6870,
+      "mae": 104.39,
+      "rmse": 186.51,
+      "wape": 0.666,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "High-Volume (Fast Movers)"
+    },
+    "85099C": {
+      "description": "JUMBO  BAG BAROQUE BLACK WHITE",
+      "samples": 56,
+      "total_actual": 2452,
+      "total_predicted": 2375,
+      "mae": 39.6,
+      "rmse": 55.8,
+      "wape": 0.904,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "Mid-Volume (Medium Velocity)"
+    },
+    "85099F": {
+      "description": "JUMBO BAG STRAWBERRY",
+      "samples": 56,
+      "total_actual": 1690,
+      "total_predicted": 2569,
+      "mae": 40.48,
+      "rmse": 59.26,
+      "wape": 1.341,
+      "zero_demand_percentage": 25.0,
+      "demand_pattern": "Regular",
+      "volume_tier": "Low-Volume (Slow Movers)"
+    },
+    "85123A": {
+      "description": "WHITE HANGING HEART T-LIGHT HOLDER",
+      "samples": 56,
+      "total_actual": 6667,
+      "total_predicted": 4759,
+      "mae": 78.17,
+      "rmse": 181.42,
+      "wape": 0.657,
+      "zero_demand_percentage": 14.3,
+      "demand_pattern": "Regular",
+      "volume_tier": "High-Volume (Fast Movers)"
     }
   }
 }

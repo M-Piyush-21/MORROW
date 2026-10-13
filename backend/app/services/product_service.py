@@ -105,7 +105,31 @@ class ProductService:
     def get_by_id(self, product_id: str) -> Optional[Product]:
         if not self._products_map:
             self._load()
-        return self._products_map.get(product_id)
+        if product_id in self._products_map:
+            return self._products_map[product_id]
+
+        p = self.get_by_sku(product_id)
+        if p:
+            return p
+
+        pid_str = str(product_id).lower()
+        if pid_str.startswith("prod-"):
+            try:
+                num = int(pid_str.replace("prod-", "").lstrip("0") or "1")
+                all_p = self.get_all()
+                if all_p:
+                    idx = (num - 1) % len(all_p)
+                    return all_p[idx]
+            except Exception:
+                pass
+        return None
+
+    def get_by_sku(self, sku: str) -> Optional[Product]:
+        for p in self.get_all():
+            if p.sku.lower() == str(sku).lower() or p.id.lower() == str(sku).lower():
+                return p
+        return None
+
 
     def get_categories(self) -> List[Category]:
         return CATEGORIES

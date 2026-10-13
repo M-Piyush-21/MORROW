@@ -66,3 +66,18 @@ stages:
           cache: false
       - backend/reports/figures/residual_distribution.png:
           cache: false
+
+  inventory_simulation:
+    cmd: python3 backend/ml/inventory_simulation.py
+    deps:
+      - backend/models/random_forest_demand.joblib
+      - backend/data/processed/features.parquet
+      - backend/ml/inventory_policy.py
+      - backend/ml/inventory_simulation.py
+      - backend/ml/utils.py
+    params:
+      - evaluate.test_split_date
+    metrics:
+      - backend/reports/metrics/inventory_simulation.json:
+          cache: false
+

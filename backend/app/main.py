@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+import time
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.config import settings
 from backend.app.routers import (
@@ -8,7 +9,10 @@ from backend.app.routers import (
     model,
     products,
     restock,
+    simulation,
+    monitoring,
 )
+from backend.ml.monitoring.service import tracker
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -18,6 +22,20 @@ app = FastAPI(
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json",
 )
+
+# Service metrics tracking middleware
+@app.middleware("http")
+async def track_service_metrics(request: Request, call_next):
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - start_time) * 1000.0
+    tracker.record_request(
+        method=request.method,
+        path=request.url.path,
+        status_code=response.status_code,
+        duration_ms=duration_ms,
+    )
+    return response
 
 # CORS Middleware - allow all in cloud deployments
 app.add_middleware(
@@ -35,6 +53,8 @@ app.include_router(products.router, prefix=settings.API_V1_PREFIX)
 app.include_router(forecasts.router, prefix=settings.API_V1_PREFIX)
 app.include_router(restock.router, prefix=settings.API_V1_PREFIX)
 app.include_router(model.router, prefix=settings.API_V1_PREFIX)
+app.include_router(simulation.router, prefix=settings.API_V1_PREFIX)
+app.include_router(monitoring.router, prefix=settings.API_V1_PREFIX)
 
 # Also register routers at root in case reverse proxy (Vercel) strips /api prefix
 app.include_router(health.router)
@@ -43,6 +63,9 @@ app.include_router(products.router)
 app.include_router(forecasts.router)
 app.include_router(restock.router)
 app.include_router(model.router)
+app.include_router(simulation.router)
+app.include_router(monitoring.router)
+
 
 
 @app.get("/")

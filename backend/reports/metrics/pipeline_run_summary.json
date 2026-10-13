@@ -1,0 +1,17 @@
+{
+  "pipeline_status": "COMPLETED",
+  "started_at": "2026-10-12T21:34:56.481725+00:00",
+  "completed_at": "2026-10-12T21:35:03.541722+00:00",
+  "duration_seconds": 7.06,
+  "stages_executed": [
+    "build_features",
+    "train",
+    "evaluate",
+    "promotion_and_registry"
+  ],
+  "promotion_decision": "APPROVED",
+  "promotion_reason": "Candidate model passed all 8 automated performance, quality, and segment guardrails.",
+  "model_version": 5,
+  "gates_passed": 8,
+  "total_gates": 8
+}

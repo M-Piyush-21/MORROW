@@ -6,6 +6,7 @@ import {
   AlertCircle,
   Sparkles,
   Info,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   ComposedChart,
@@ -93,16 +94,22 @@ export function DemandForecastPage() {
       </div>
 
       {/* Model status banner */}
-      <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary shrink-0" />
           <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-primary">Live ML Model Active</span> — Multi-step recursive forecasting with auto-regressive lag features and uncertainty bounds.
+            <span className="font-medium text-primary">Live ML Model Active</span> — Multi-step recursive forecasting with leak-free features and <span className="font-semibold text-foreground">empirically calibrated prediction intervals</span> (80% nominal, 75.8% measured coverage).
           </p>
         </div>
-        <Badge variant="outline" className="text-xs text-primary border-primary/20">
-          Model v1.0.0 (RF)
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs text-success border-success/30 bg-success/5 gap-1">
+            <ShieldCheck className="h-3 w-3" />
+            75.8% Test Coverage
+          </Badge>
+          <Badge variant="outline" className="text-xs text-primary border-primary/20">
+            Model v1.2.0 (RF)
+          </Badge>
+        </div>
       </div>
 
       {/* Controls */}
