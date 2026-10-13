@@ -313,14 +313,14 @@ class ModelService:
                 eval_summary["r2"] = round(float(rf_m.get("r2", 0.1568)), 4)
 
         return ModelInfoResponse(
-            model_name="Random Forest Regressor (Morrow)",
-            model_version=version,
-            last_successful_training_time=created_at,
+            modelName="Random Forest Regressor (Morrow)",
+            modelVersion=version,
+            lastSuccessfulTrainingTime=created_at,
             status=status,
-            git_commit="master-rev4",
-            evaluation_summary=eval_summary,
-            data_freshness=data_freshness,
-            is_synthetic_inventory_demonstration=True,
+            gitCommit="master-rev4",
+            evaluationSummary=eval_summary,
+            dataFreshness=data_freshness,
+            isSyntheticInventoryDemonstration=True,
         )
 
 
