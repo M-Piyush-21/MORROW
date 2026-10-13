@@ -76,12 +76,17 @@ class DashboardService:
 
         # Recent activity
         now = datetime.now()
+        first_sku = products[0].sku if products else "SKU-22423"
+        first_id = products[0].id if products else None
+        second_sku = products[1].sku if len(products) > 1 else first_sku
+        second_id = products[1].id if len(products) > 1 else first_id
+
         recent_activity = [
             ActivityEvent(
                 id="act-1",
                 type="forecast-generated",
-                message=f"Model generated 7-day forecast for SKU {products[0].sku}",
-                productId=products[0].id,
+                message=f"Model generated 7-day forecast for SKU {first_sku}",
+                productId=first_id,
                 timestamp=(now - timedelta(minutes=15)).isoformat() + "Z",
                 user="Morrow ML Engine",
             ),
@@ -96,8 +101,8 @@ class DashboardService:
             ActivityEvent(
                 id="act-3",
                 type="stock-update",
-                message=f"Inventory level adjusted for SKU {products[1].sku}",
-                productId=products[1].id,
+                message=f"Inventory level adjusted for SKU {second_sku}",
+                productId=second_id,
                 timestamp=(now - timedelta(hours=3)).isoformat() + "Z",
                 user="Operations Lead",
             ),

@@ -27,14 +27,33 @@ app = FastAPI(
 @app.middleware("http")
 async def track_service_metrics(request: Request, call_next):
     start_time = time.perf_counter()
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        import traceback
+        from fastapi.responses import JSONResponse
+        err_tb = traceback.format_exc()
+        print(f"ERROR in {request.method} {request.url.path}: {err_tb}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "INTERNAL_SERVER_ERROR",
+                "type": exc.__class__.__name__,
+                "message": str(exc),
+                "traceback": err_tb,
+            },
+        )
+
     duration_ms = (time.perf_counter() - start_time) * 1000.0
-    tracker.record_request(
-        method=request.method,
-        path=request.url.path,
-        status_code=response.status_code,
-        duration_ms=duration_ms,
-    )
+    try:
+        tracker.record_request(
+            method=request.method,
+            path=request.url.path,
+            status_code=response.status_code,
+            duration_ms=duration_ms,
+        )
+    except Exception:
+        pass
     return response
 
 # CORS Middleware - allow all in cloud deployments
